@@ -3,435 +3,586 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal d'Investissement International & ETF Ultra Pro</title>
+  <title>Terminal Quantitatif & Assistant Comptable International - Édition Ultime</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
   <style>
     .glass-card {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
     }
     .glow-effect {
-      box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.15);
+      box-shadow: 0 0 40px -5px rgba(16, 185, 129, 0.3);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
-  <div id="root"></div>
-
-  <script type="text/babel">
-    const { useState, useMemo, useEffect, Component } = React;
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased p-3 md:p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
     
-    const RC = window.Recharts || {};
-    const ResponsiveContainer = RC.ResponsiveContainer || (({children}) => <div>{children}</div>);
-    const AreaChart = RC.AreaChart || (() => null);
-    const Area = RC.Area || (() => null);
-    const XAxis = RC.XAxis || (() => null);
-    const YAxis = RC.YAxis || (() => null);
-    const Tooltip = RC.Tooltip || (() => null);
-    const CartesianGrid = RC.CartesianGrid || (() => null);
-    const Legend = RC.Legend || (() => null);
-    const PieChart = RC.PieChart || (() => null);
-    const Pie = RC.Pie || (() => null);
-    const Cell = RC.Cell || (() => null);
+    <!-- HEADER -->
+    <header class="glass-card glow-effect p-5 md:p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <h1 id="uiTitle" class="text-xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            Terminal Quantitatif & Assistant Fiscal Pro
+          </h1>
+          <span id="deviceBadge" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
+            Initialisation...
+          </span>
+        </div>
+        <p id="uiSubtitle" class="text-slate-400 text-xs md:text-sm mt-1">Plateforme matricielle : optimisation fiscale internationale, backtests multi-actifs & rentes FIRE</p>
+      </div>
 
-    class ErrorBoundary extends Component {
-      constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-      }
-      static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-      }
-      componentDidCatch(error, errorInfo) {
-        console.error("React Error Boundary:", error, errorInfo);
-      }
-      render() {
-        if (this.state.hasError) {
-          return (
-            <div className="p-8 text-center text-red-400 bg-slate-900 min-h-screen flex flex-col items-center justify-center">
-              <h2 className="text-2xl font-bold mb-4">Erreur d'affichage détectée.</h2>
-              <p className="text-sm font-mono bg-slate-950 p-4 rounded-lg border border-red-900 max-w-xl text-left">
-                {this.state.error?.toString()}
-              </p>
-              <button onClick={() => window.location.reload()} className="mt-6 px-4 py-2 bg-emerald-600 text-white rounded-lg">
-                Recharger la page
-              </button>
-            </div>
-          );
-        }
-        return this.props.children;
-      }
-    }
+      <div class="flex flex-wrap items-center gap-3">
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Courtier</label>
+          <select id="selectBroker" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
+            <option value="bdirect">Bourse Direct (0.2%)</option>
+            <option value="bourso">Boursorama / BoursoBank (0.5%)</option>
+            <option value="fortuneo">Fortuneo (0.35%)</option>
+            <option value="tr">Trade Republic (0%)</option>
+            <option value="ibkr">Interactive Brokers (0.05%)</option>
+          </select>
+        </div>
 
-    const ETF_DATABASE = [
-      { id: 'cw8', name: 'Amundi PEA MSCI World UCITS ETF', isin: 'FR0013412020', ticker: 'CW8', pea: true, ter: 0.38, hist10y: 10.5, risk: 'Modéré', color: '#3b82f6' },
-      { id: 'wpea', name: 'iShares MSCI World Swap PEA UCITS ETF', isin: 'IE0002XZWYI4', ticker: 'WPEA', pea: true, ter: 0.20, hist10y: 10.5, risk: 'Modéré', color: '#10b981' },
-      { id: 'panx', name: 'Amundi PEA Nasdaq 100 UCITS ETF', isin: 'FR0011871110', ticker: 'PUUST', pea: true, ter: 0.30, hist10y: 17.2, risk: 'Élevé', color: '#8b5cf6' },
-      { id: 'ese', name: 'Amundi S&P 500 UCITS ETF (PEA)', isin: 'FR0013012434', ticker: 'ESE', pea: true, ter: 0.15, hist10y: 12.8, risk: 'Modéré', color: '#f59e0b' },
-      { id: 'paeem', name: 'Amundi PEA MSCI Emerging ESG UCITS ETF', isin: 'LU2572257211', ticker: 'PAEEM', pea: true, ter: 0.30, hist10y: 4.8, risk: 'Élevé', color: '#ec4899' },
-      { id: 'semi', name: 'Amundi MSCI Global Semiconductors UCITS ETF', isin: 'LU1900066915', ticker: 'SEMI', pea: false, ter: 0.35, hist10y: 22.4, risk: 'Très Élevé', color: '#06b6d4' },
-      { id: 'robo', name: 'Amundi Stoxx Global Automation & Robotics', isin: 'LU1838002480', ticker: 'ROBO', pea: false, ter: 0.40, hist10y: 11.2, risk: 'Élevé', color: '#6366f1' },
-      { id: 'inrg', name: 'iShares Global Clean Energy UCITS ETF', isin: 'IE00B1XNHC34', ticker: 'INRG', pea: false, ter: 0.65, hist10y: 5.1, risk: 'Très Élevé', color: '#14b8a6' }
-    ];
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Résidence Fiscale</label>
+          <select id="countrySelect" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
+            <option value="FR">🇫🇷 France (PEA / CTO / PER)</option>
+            <option value="US">🇺🇸 United States (Roth IRA / 401k)</option>
+            <option value="UK">🇬🇧 United Kingdom (ISA / GIA)</option>
+            <option value="DE">🇩🇪 Germany (Depot / Teilfreistellung)</option>
+            <option value="ES">🇪🇸 España (Cuenta Valores / Fondos)</option>
+          </select>
+        </div>
 
-    function App() {
-      const [initialCapital, setInitialCapital] = useState(5000);
-      const [recurringAmount, setRecurringAmount] = useState(300);
-      const [frequency, setFrequency] = useState(12);
-      const [years, setYears] = useState(20);
-      const [inflation, setInflation] = useState(2.0);
-      const [withdrawalRate, setWithdrawalRate] = useState(4.0);
+        <div>
+          <label class="text-xs text-slate-400 block mb-1">Langue</label>
+          <select id="langSelect" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
+            <option value="FR">Français</option>
+            <option value="EN">English</option>
+            <option value="ES">Español</option>
+          </select>
+        </div>
+      </div>
+    </header>
 
-      const [portfolio, setPortfolio] = useState([
-        { etfId: 'wpea', weight: 60 },
-        { etfId: 'panx', weight: 40 }
-      ]);
-
-      // Calcul automatique de la performance pondérée et du TER d'après les ETF sélectionnés
-      const portfolioMetrics = useMemo(() => {
-        let totalWeight = portfolio.reduce((acc, curr) => acc + curr.weight, 0);
-        if (totalWeight === 0) return { avgTer: 0.2, avgHist: 10.0, valid: false, riskLabel: 'Modéré' };
-
-        let avgTer = 0;
-        let avgHist = 0;
-        let riskScore = 0;
-        const riskWeights = { 'Faible': 1, 'Modéré': 2, 'Élevé': 3, 'Très Élevé': 4 };
-
-        portfolio.forEach(item => {
-          const etf = ETF_DATABASE.find(e => e.id === item.etfId);
-          if (etf) {
-            avgTer += (etf.ter * item.weight) / totalWeight;
-            avgHist += (etf.hist10y * item.weight) / totalWeight;
-            riskScore += (riskWeights[etf.risk] || 2) * (item.weight / 100);
-          }
-        });
-
-        let riskLabel = 'Modéré';
-        if (riskScore > 3.2) riskLabel = 'Très Élevé';
-        else if (riskScore > 2.6) riskLabel = 'Élevé';
-        else if (riskScore < 1.8) riskLabel = 'Conservateur';
-
-        return {
-          avgTer: Number(avgTer.toFixed(2)),
-          avgHist: Number(avgHist.toFixed(2)),
-          totalWeight,
-          valid: totalWeight === 100,
-          riskLabel
-        };
-      }, [portfolio]);
-
-      const simulationData = useMemo(() => {
-        const data = [];
-        const periodsPerYear = Number(frequency);
-        const totalPeriods = years * periodsPerYear;
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- CONTROLES SIDEBAR -->
+      <div class="space-y-6">
         
-        const netReturn = portfolioMetrics.avgHist - portfolioMetrics.avgTer;
-        const netTerRatePerPeriod = Math.pow(1 + Math.max(-90, netReturn) / 100, 1 / periodsPerYear) - 1;
-        const inflationRatePerPeriod = Math.pow(1 + Math.max(-90, netReturn - inflation) / 100, 1 / periodsPerYear) - 1;
+        <!-- SECTION 1 : CAPITAL -->
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <h2 class="text-base md:text-lg font-bold border-b border-slate-800 pb-3">1. Capital & Versements</h2>
 
-        let totalInvested = initialCapital;
-        let netPeaValue = initialCapital;
-        let inflationAdjustedValue = initialCapital;
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Apport Initial</span>
+              <span id="valInitialDisplay" class="font-mono text-emerald-400 font-bold">5 000 €</span>
+            </div>
+            <input type="number" id="numInitial" value="5000" step="500" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-sm mb-2 outline-none">
+            <input type="range" id="rangeInitial" min="0" max="150000" step="100" value="5000" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+          </div>
 
-        data.push({
-          year: 0,
-          invested: Math.round(totalInvested),
-          peaNet: Math.round(netPeaValue),
-          ctoNet: Math.round(netPeaValue),
-          inflationNet: Math.round(inflationAdjustedValue)
-        });
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Versement Régulier</span>
+              <span id="valRecurringDisplay" class="font-mono text-emerald-400 font-bold">300 €</span>
+            </div>
+            <input type="number" id="numRecurring" value="300" step="50" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-sm mb-2 outline-none">
+            <input type="range" id="rangeRecurring" min="0" max="5000" step="100" value="300" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+          </div>
 
-        for (let p = 1; p <= totalPeriods; p++) {
-          totalInvested += recurringAmount;
-          netPeaValue = (netPeaValue + recurringAmount) * (1 + netTerRatePerPeriod);
-          inflationAdjustedValue = (inflationAdjustedValue + recurringAmount) * (1 + inflationRatePerPeriod);
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Fréquence des versements</label>
+            <select id="selectFreq" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs md:text-sm">
+              <option value="12">Mensuelle (12/an)</option>
+              <option value="4">Trimestrielle (4/an)</option>
+              <option value="1">Annuelle (1/an)</option>
+            </select>
+          </div>
 
-          if (p % periodsPerYear === 0) {
-            const currentYear = p / periodsPerYear;
-            const capitalGain = Math.max(0, netPeaValue - totalInvested);
-            
-            const peaTax = currentYear >= 5 ? capitalGain * 0.172 : capitalGain * 0.30;
-            const ctoTax = capitalGain * 0.30;
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-400">Durée du projet</span>
+              <span id="valYears" class="font-mono text-emerald-400 font-bold">20 ans</span>
+            </div>
+            <input type="range" id="rangeYears" min="1" max="40" step="1" value="20" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+          </div>
 
-            data.push({
-              year: currentYear,
-              invested: Math.round(totalInvested),
-              peaNet: Math.round(netPeaValue - peaTax),
-              ctoNet: Math.round(netPeaValue - ctoTax),
-              inflationNet: Math.round(inflationAdjustedValue)
-            });
-          }
-        }
-        return data;
-      }, [initialCapital, recurringAmount, frequency, years, inflation, portfolioMetrics]);
-
-      const lastDataPoint = simulationData[simulationData.length - 1];
-      const taxSaved = lastDataPoint ? lastDataPoint.peaNet - lastDataPoint.ctoNet : 0;
-      const fireMonthly = lastDataPoint ? Math.round((lastDataPoint.peaNet * (withdrawalRate / 100)) / 12) : 0;
-
-      const pieChartData = useMemo(() => {
-        return portfolio.map(item => {
-          const etf = ETF_DATABASE.find(e => e.id === item.etfId);
-          return {
-            name: etf ? etf.ticker : item.etfId,
-            value: item.weight,
-            color: etf ? etf.color : '#64748b'
-          };
-        }).filter(d => d.value > 0);
-      }, [portfolio]);
-
-      const handleWeightChange = (index, value) => {
-        const updated = [...portfolio];
-        updated[index].weight = Number(value);
-        setPortfolio(updated);
-      };
-
-      const handleAddEtf = (etfId) => {
-        if (!portfolio.find(p => p.etfId === etfId)) {
-          setPortfolio([...portfolio, { etfId, weight: 0 }]);
-        }
-      };
-
-      const handleRemoveEtf = (index) => {
-        setPortfolio(portfolio.filter((_, i) => i !== index));
-      };
-
-      return (
-        <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 space-y-8">
-          {/* Header */}
-          <header className="glass-card glow-effect p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div class="pt-3 border-t border-slate-800 space-y-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Hypothèses & Stress Tests</h3>
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                Terminal d'Investissement & ETF Ultra Pro
-              </h1>
-              <p className="text-slate-400 text-xs md:text-sm mt-1">Simulation dynamique basée sur l'historique réel des ETF</p>
-            </div>
-            <div className="bg-emerald-950/80 border border-emerald-800 text-emerald-300 px-4 py-2 rounded-xl text-xs md:text-sm font-semibold">
-              Rendement historique moyen sélectionné : <span className="font-mono font-bold text-emerald-400">{portfolioMetrics.avgHist}% / an</span>
-            </div>
-          </header>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Contrôles & Saisies Manuelles */}
-            <div className="glass-card rounded-2xl p-6 space-y-6">
-              <h2 className="text-lg font-bold border-b border-slate-800 pb-3">1. Paramètres de Capital (Saisie Libre)</h2>
-
-              <div>
-                <label className="text-xs text-slate-400 block mb-1">Apport Initial (€)</label>
-                <input
-                  type="number"
-                  step="500"
-                  min="0"
-                  max="1000000"
-                  value={initialCapital}
-                  onChange={(e) => setInitialCapital(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-mono text-emerald-400 font-bold outline-none focus:border-emerald-500"
-                />
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Inflation annuelle</span>
+                <span id="valInflation" class="font-mono text-amber-400">2.0%</span>
               </div>
-
-              <div>
-                <label className="text-xs text-slate-400 block mb-1">Versement Mensuel / Périodique (€)</label>
-                <input
-                  type="number"
-                  step="50"
-                  min="0"
-                  max="50000"
-                  value={recurringAmount}
-                  onChange={(e) => setRecurringAmount(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 font-mono text-emerald-400 font-bold outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs text-slate-400 block mb-2">Fréquence</label>
-                <select
-                  value={frequency}
-                  onChange={(e) => setFrequency(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2.5 text-xs md:text-sm"
-                >
-                  <option value={12}>Mensuelle (12/an)</option>
-                  <option value={4}>Trimestrielle (4/an)</option>
-                  <option value={1}>Annuelle (1/an)</option>
-                </select>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-400">Durée du projet</span>
-                  <span className="font-mono text-emerald-400 font-bold">{years} ans</span>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="40"
-                  step="1"
-                  value={years}
-                  onChange={(e) => setYears(Number(e.target.value))}
-                  className="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-slate-800 space-y-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">Hypothèses Macro</h3>
-                <div>
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Inflation annuelle</span>
-                    <span className="font-mono text-amber-400">{inflation}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={inflation}
-                    onChange={(e) => setInflation(Number(e.target.value))}
-                    className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
-                  />
-                </div>
-              </div>
+              <input type="range" id="rangeInflation" min="0" max="5" step="0.1" value="2.0" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
 
-            {/* Graphiques & Résultats */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="glass-card rounded-2xl p-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
-                  <h2 className="text-lg font-bold">Projections & Comparatif PEA vs CTO</h2>
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">
-                    Gain Fiscal : +{taxSaved.toLocaleString('fr-FR')} €
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-400 block">Capital Investi</span>
-                    <span className="text-base md:text-lg font-bold font-mono text-slate-100">{lastDataPoint?.invested.toLocaleString('fr-FR')} €</span>
-                  </div>
-                  <div className="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800">
-                    <span className="text-xs text-slate-400 block">Valeur PEA Nette</span>
-                    <span className="text-base md:text-lg font-bold font-mono text-emerald-300">{lastDataPoint?.peaNet.toLocaleString('fr-FR')} €</span>
-                  </div>
-                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-400 block">Valeur CTO Nette</span>
-                    <span className="text-base md:text-lg font-bold font-mono text-slate-300">{lastDataPoint?.ctoNet.toLocaleString('fr-FR')} €</span>
-                  </div>
-                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-                    <span className="text-xs text-slate-400 block">Rente (4%)</span>
-                    <span className="text-base md:text-lg font-bold font-mono text-amber-300">{fireMonthly.toLocaleString('fr-FR')} €/mo</span>
-                  </div>
-                </div>
-
-                <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={simulationData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="year" stroke="#64748b" tick={{ fontSize: 12 }} />
-                      <YAxis stroke="#64748b" tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ backgroundColor: '#090d16', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}
-                        formatter={(val) => [`${val.toLocaleString('fr-FR')} €`, '']}
-                      />
-                      <Legend />
-                      <Area type="monotone" dataKey="peaNet" name="PEA Net" stroke="#10b981" fill="#10b981" fillOpacity={0.15} strokeWidth={2.5} />
-                      <Area type="monotone" dataKey="ctoNet" name="CTO Net" stroke="#64748b" fill="#64748b" fillOpacity={0.05} strokeWidth={2} />
-                      <Area type="monotone" dataKey="invested" name="Capital Investi" stroke="#3b82f6" fill="none" strokeDasharray="4 4" strokeWidth={2} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Taux de retrait FIRE</span>
+                <span id="valWithdrawal" class="font-mono text-teal-400">4.0%</span>
               </div>
+              <input type="range" id="rangeWithdrawal" min="1" max="8" step="0.5" value="4.0" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            </div>
 
-              {/* Constructeur de Portefeuille ETF */}
-              <div className="glass-card rounded-2xl p-6 space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
-                  <div>
-                    <h2 className="text-lg font-bold">2. Composition du Portefeuille & Historique ETF</h2>
-                    <p className="text-xs text-slate-400">Ajustez les pourcentages : le rendement global s'adapte automatiquement</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-xs md:text-sm font-bold ${portfolioMetrics.valid ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      Total Allocation : {portfolioMetrics.totalWeight}% {portfolioMetrics.valid ? '✓' : '(Doit faire 100%)'}
-                    </span>
-                    <span className="text-xs text-slate-400 block">Frais TER moyens : {portfolioMetrics.avgTer}% | Risque : <strong className="text-cyan-300">{portfolioMetrics.riskLabel}</strong></span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                  <div className="md:col-span-2 space-y-3">
-                    {portfolio.map((item, index) => {
-                      const etf = ETF_DATABASE.find(e => e.id === item.etfId);
-                      return (
-                        <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
-                          <div className="flex-1">
-                            <div className="font-semibold text-xs md:text-sm text-slate-200">{etf?.name}</div>
-                            <div className="text-xs text-slate-400 font-mono">Hist. 10 ans : <strong className="text-emerald-400">+{etf?.hist10y}%/an</strong> | TER : {etf?.ter}%</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={item.weight}
-                              onChange={(e) => handleWeightChange(index, e.target.value)}
-                              className="w-16 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-center text-xs font-mono text-emerald-400 font-bold"
-                            />
-                            <span className="text-xs text-slate-400">%</span>
-                            <button
-                              onClick={() => handleRemoveEtf(index)}
-                              className="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-950/40 rounded border border-red-900/60"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="h-48 flex items-center justify-center bg-slate-900/50 rounded-xl border border-slate-800">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={pieChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={3}>
-                          {pieChartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip contentStyle={{ backgroundColor: '#090d16', borderColor: '#334155', borderRadius: '8px', color: '#f8fafc', fontSize: '11px' }} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <label className="text-xs text-slate-400 block mb-2">Ajouter un ETF de la base :</label>
-                  <div className="flex flex-wrap gap-2">
-                    {ETF_DATABASE.map(etf => (
-                      <button
-                        key={etf.id}
-                        onClick={() => handleAddEtf(etf.id)}
-                        className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-700 font-mono transition-colors"
-                      >
-                        + {etf.ticker} (+{etf.hist10y}%)
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div>
+              <label class="text-xs text-slate-400 block mb-1">Stress Test Historique de Krach</label>
+              <select id="selectStress" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs md:text-sm">
+                <option value="none">Aucun (Trajectoire Standard)</option>
+                <option value="2000">Krach Bulle Internet (-40%)</option>
+                <option value="2008">Crise Subprimes (-55%)</option>
+                <option value="2020">Choc COVID-19 (-30%)</option>
+                <option value="stagflation">Stagflation prolongée (-15%/an)</option>
+              </select>
             </div>
           </div>
         </div>
-      );
+
+        <!-- SECTION 2 : OPTIMISATION FISCALE COMPTABLE -->
+        <div class="glass-card rounded-2xl p-6 space-y-4 border-l-4 border-l-cyan-400">
+          <h2 class="text-base md:text-lg font-bold flex items-center gap-2">
+            📊 Assistant Comptable & Fiscal
+          </h2>
+          <p class="text-xs text-slate-400">Optimisation IR, déduction PER et arbitrage PFU vs Barème</p>
+
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Tranche Marginale d'Imposition (TMI)</label>
+            <select id="selectTmi" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs">
+              <option value="0">0% (Non imposable)</option>
+              <option value="11">11% (Tranche 1)</option>
+              <option value="30" selected>30% (Tranche 2)</option>
+              <option value="41">41% (Tranche 3)</option>
+              <option value="45">45% (Tranche 4)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Versement Annuel sur PER (€)</label>
+            <input type="number" id="numPer" value="2000" step="500" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300 text-xs outline-none">
+          </div>
+
+          <div id="taxAuditBox" class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs space-y-2"></div>
+        </div>
+
+        <!-- SAUVEGARDE & EXPORTS -->
+        <div class="glass-card rounded-2xl p-5 space-y-3">
+          <button onclick="saveScenario()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 rounded-xl border border-slate-700">
+            💾 Sauvegarder ce Scénario
+          </button>
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="exportCSV()" class="bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-medium py-2 px-2 rounded-xl border border-slate-800">📊 CSV</button>
+            <button onclick="exportReport()" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 text-xs font-medium py-2 px-2 rounded-xl border border-slate-800">📑 Rapport</button>
+          </div>
+          <div id="savedList" class="space-y-2 max-h-40 overflow-y-auto text-xs pt-2"></div>
+        </div>
+
+      </div>
+
+      <!-- RÉSULTATS & PORTEFEUILLE MATRICIEL -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="glass-card rounded-2xl p-6 space-y-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
+            <h2 class="text-base md:text-lg font-bold">Projections Financières & Backtest</h2>
+            <span id="badgeTax" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">
+              Calcul...
+            </span>
+          </div>
+
+          <div id="peaAlertContainer" class="hidden bg-amber-950/40 border border-amber-800/80 p-3 rounded-xl text-xs text-amber-300">
+            ⚠️ <span>Plafond de 150 000 € du PEA atteint. Les versements complémentaires sont redirigés vers le CTO (Flat Tax 30%).</span>
+          </div>
+
+          <!-- CARTES DE MÉTRIQUES -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block">Capital Investi</span>
+              <span id="resInvested" class="text-base md:text-lg font-bold font-mono text-slate-100">0 €</span>
+            </div>
+            <div class="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800">
+              <span class="text-xs text-emerald-400 block">Valeur Nette Optimisée</span>
+              <span id="resOptimized" class="text-base md:text-lg font-bold font-mono text-emerald-300">0 €</span>
+            </div>
+            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block">Valeur Nette Standard</span>
+              <span id="resStandard" class="text-base md:text-lg font-bold font-mono text-slate-300">0 €</span>
+            </div>
+            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block">Rente Mensuelle FIRE</span>
+              <span id="resFire" class="text-base md:text-lg font-bold font-mono text-amber-300">0 € /mo</span>
+            </div>
+          </div>
+
+          <!-- CANVAS DE GRAPHIQUE -->
+          <div class="space-y-3">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+              <span>Trajectoire Nette en Mode Multi-Actifs</span>
+              <div class="flex items-center gap-4">
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Portefeuille Net</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Capital Investi</span>
+              </div>
+            </div>
+            <div class="relative h-64 md:h-80 w-full bg-slate-900/80 rounded-xl border border-slate-800 p-2">
+              <canvas id="chartCanvas" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+          <!-- PORTEFEUILLE EXTENSIF À 8 ACTIFS ET DOMAINES -->
+          <div class="space-y-4 pt-2">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-200">2. Matrice d'Allocation Multi-Actifs (8 Domaines)</h3>
+                <p class="text-xs text-slate-400">Pondérez vos ETF sectoriels et classes d'actifs pour calculer le rendement global</p>
+              </div>
+              <div class="text-right">
+                <span id="allocBadge" class="text-xs font-bold text-emerald-400">Total : 100% ✓</span>
+                <span id="avgStats" class="text-xs text-slate-400 block">TER Moyen : 0.28% | Hist : +11.2%/an</span>
+              </div>
+            </div>
+
+            <div id="etfListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+          </div>
+
+          <!-- JALONS D'ÉVOLUTION -->
+          <div class="overflow-x-auto pt-2">
+            <h3 class="text-sm font-bold text-slate-300 mb-3">Tableau des Jalons d'Évolution</h3>
+            <table class="w-full text-left text-xs md:text-sm text-slate-300">
+              <thead class="bg-slate-900 text-slate-400 uppercase text-xs">
+                <tr>
+                  <th class="p-3">Échéance</th>
+                  <th class="p-3">Capital Versé</th>
+                  <th class="p-3">Valeur Nette Optimisée</th>
+                  <th class="p-3">Plus-value Nette</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const ETF_DB = [
+      { id: 'wpea', name: 'MSCI World (Global Broad)', ticker: 'WPEA', ter: 0.20, hist: 10.5, weight: 30, color: '#10b981' },
+      { id: 'panx', name: 'Nasdaq 100 (Tech & IA)', ticker: 'PUUST', ter: 0.30, hist: 17.2, weight: 20, color: '#8b5cf6' },
+      { id: 'ese', name: 'S&P 500 (Grandes Caps US)', ticker: 'ESE', ter: 0.15, hist: 12.8, weight: 20, color: '#f59e0b' },
+      { id: 'semi', name: 'Semiconductors (Puces)', ticker: 'SEMI', ter: 0.35, hist: 22.4, weight: 10, color: '#06b6d4' },
+      { id: 'immo', name: 'REITs & Immo', ticker: 'REIT', ter: 0.45, hist: 8.5, weight: 10, color: '#ec4899' },
+      { id: 'clean', name: 'Clean Energy & Transition', ticker: 'INRG', ter: 0.65, hist: 6.2, weight: 5, color: '#14b8a6' },
+      { id: 'emerg', name: 'MSCI Emerging ESG', ticker: 'PAEEM', ter: 0.30, hist: 5.8, weight: 5, color: '#6366f1' },
+      { id: 'bonds', name: 'Obligations d’État 7-10y', ticker: 'GOVT', ter: 0.12, hist: 3.5, weight: 0, color: '#94a3b8' }
+    ];
+
+    const TAX_RULES = {
+      FR: { name: "France (PEA/CTO/PER)", curr: "€", taxOpt: (y, g, c) => c > 150000 ? g * 0.30 : g * (y >= 5 ? 0.172 : 0.30), taxStd: (y, g) => g * 0.30 },
+      US: { name: "United States (Roth IRA)", curr: "$", taxOpt: (y, g) => 0, taxStd: (y, g) => g * 0.15 },
+      UK: { name: "United Kingdom (ISA)", curr: "£", taxOpt: (y, g) => 0, taxStd: (y, g) => g * 0.20 },
+      DE: { name: "Germany (Depot)", curr: "€", taxOpt: (y, g) => g * 0.184, taxStd: (y, g) => g * 0.26375 },
+      ES: { name: "España (Fondos)", curr: "€", taxOpt: (y, g) => g * 0.19, taxStd: (y, g) => g * 0.23 }
+    };
+
+    const BROKERS_FEE = { bdirect: 0.2, bourso: 0.5, fortuneo: 0.35, tr: 0.0, ibkr: 0.05 };
+
+    function detectDevice() {
+      const width = window.innerWidth;
+      const badge = document.getElementById('deviceBadge');
+      if (width < 768) badge.innerText = "📱 Mobile";
+      else if (width < 1024) badge.innerText = "💻 Tablette";
+      else badge.innerText = "🖥️ Desktop Quant";
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    );
+    function renderEtfList() {
+      const container = document.getElementById('etfListContainer');
+      container.innerHTML = ETF_DB.map((etf, idx) => `
+        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+          <div>
+            <div class="font-semibold text-xs text-slate-200">${etf.name}</div>
+            <div class="text-[10px] text-slate-400 font-mono">Hist: +${etf.hist}%/an | TER: ${etf.ter}%</div>
+          </div>
+          <div class="flex items-center gap-1">
+            <input type="number" min="0" max="100" value="${etf.weight}" onchange="updateEtfWeight(${idx}, this.value)" class="w-14 bg-slate-950 border border-slate-700 rounded p-1 text-center font-mono text-emerald-400 text-xs">
+            <span class="text-xs text-slate-400">%</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.updateEtfWeight = function(idx, val) {
+      ETF_DB[idx].weight = parseFloat(val) || 0;
+      updateSimulation();
+    };
+
+    function syncInputs(numId, rangeId, displayId, suffix) {
+      const numEl = document.getElementById(numId);
+      const rangeEl = document.getElementById(rangeId);
+      const displayEl = document.getElementById(displayId);
+
+      numEl.addEventListener('input', () => {
+        rangeEl.value = numEl.value;
+        displayEl.innerText = parseFloat(numEl.value || 0).toLocaleString('fr-FR') + ' ' + suffix;
+        updateSimulation();
+      });
+
+      rangeEl.addEventListener('input', () => {
+        numEl.value = rangeEl.value;
+        displayEl.innerText = parseFloat(rangeEl.value).toLocaleString('fr-FR') + ' ' + suffix;
+        updateSimulation();
+      });
+    }
+
+    function drawChart(data, curr) {
+      const canvas = document.getElementById('chartCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      const padding = 35;
+      const width = canvas.width - padding * 2;
+      const height = canvas.height - padding * 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (!data || data.length === 0) return;
+
+      const maxVal = Math.max(...data.map(d => Math.max(d.peaNet, d.invested)));
+      const minVal = 0;
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + height - (height / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(padding + width, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '10px monospace';
+        const labelVal = Math.round((maxVal / 4) * i);
+        ctx.fillText((labelVal / 1000).toFixed(0) + 'k ' + curr, 2, y + 3);
+      }
+
+      // Investi
+      ctx.beginPath();
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      data.forEach((d, i) => {
+        const x = padding + (width / (data.length - 1)) * i;
+        const y = padding + height - ((d.invested - minVal) / (maxVal - minVal)) * height;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Net Opt
+      ctx.beginPath();
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 3;
+      data.forEach((d, i) => {
+        const x = padding + (width / (data.length - 1)) * i;
+        const y = padding + height - ((d.peaNet - minVal) / (maxVal - minVal)) * height;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    function updateSimulation() {
+      const countryKey = document.getElementById('countrySelect').value;
+      const brokerKey = document.getElementById('selectBroker').value;
+      const stressKey = document.getElementById('selectStress').value;
+      const tmi = parseFloat(document.getElementById('selectTmi').value);
+      const perAnnual = parseFloat(document.getElementById('numPer').value) || 0;
+      const taxRule = TAX_RULES[countryKey] || TAX_RULES.FR;
+      const brokerFeePercent = BROKERS_FEE[brokerKey] || 0.2;
+
+      let totalWeight = ETF_DB.reduce((acc, curr) => acc + curr.weight, 0);
+      let avgTer = 0, avgHist = 0;
+      ETF_DB.forEach(etf => {
+        if (totalWeight > 0) {
+          avgTer += (etf.ter * etf.weight) / totalWeight;
+          avgHist += (etf.hist * etf.weight) / totalWeight;
+        }
+      });
+
+      const allocBadge = document.getElementById('allocBadge');
+      if (totalWeight === 100) {
+        allocBadge.innerText = "Total : 100% ✓";
+        allocBadge.className = "text-xs font-bold text-emerald-400";
+      } else {
+        allocBadge.innerText = `Total : ${totalWeight}% (Ajuster à 100%)`;
+        allocBadge.className = "text-xs font-bold text-amber-400";
+      }
+      document.getElementById('avgStats').innerText = `TER Moyen : ${avgTer.toFixed(2)}% | Hist : +${avgHist.toFixed(2)}%/an`;
+
+      const initial = parseFloat(document.getElementById('numInitial').value) || 0;
+      const recurring = parseFloat(document.getElementById('numRecurring').value) || 0;
+      const freq = parseInt(document.getElementById('selectFreq').value);
+      const years = parseInt(document.getElementById('rangeYears').value);
+      const inflation = parseFloat(document.getElementById('rangeInflation').value);
+      const withdrawalRate = parseFloat(document.getElementById('rangeWithdrawal').value);
+
+      document.getElementById('valYears').innerText = years + ' ans';
+      document.getElementById('valInflation').innerText = inflation + '%';
+      document.getElementById('valWithdrawal').innerText = withdrawalRate + '%';
+
+      const netReturn = avgHist - avgTer;
+      const ratePerPeriod = Math.pow(1 + netReturn / 100, 1 / freq) - 1;
+      const totalPeriods = years * freq;
+      const brokerFactor = 1 - (brokerFeePercent / 100);
+
+      let totalInvested = initial;
+      let netValue = initial * brokerFactor;
+      const plotData = [];
+      let historyHTML = '';
+      let peaExceeded = false;
+
+      plotData.push({ year: 0, invested: initial, peaNet: Math.round(netValue) });
+
+      for (let p = 1; p <= totalPeriods; p++) {
+        const netContribution = recurring * brokerFactor;
+        totalInvested += recurring;
+        netValue = (netValue + netContribution) * (1 + ratePerPeriod);
+
+        const currentYear = p / freq;
+        if (stressKey === '2000' && currentYear === 3 && p % freq === 0) netValue *= 0.6;
+        if (stressKey === '2008' && currentYear === 5 && p % freq === 0) netValue *= 0.45;
+        if (stressKey === '2020' && currentYear === 2 && p % freq === 0) netValue *= 0.7;
+        if (stressKey === 'stagflation' && currentYear >= 4 && currentYear <= 8 && p % freq === 0) netValue *= 0.85;
+
+        if (totalInvested > 150000 && countryKey === 'FR') peaExceeded = true;
+
+        if (p % freq === 0) {
+          const gain = Math.max(0, netValue - totalInvested);
+          const optTax = taxRule.taxOpt(currentYear, gain, totalInvested);
+          const finalNetOpt = totalInvested + (gain - optTax);
+
+          plotData.push({ year: currentYear, invested: Math.round(totalInvested), peaNet: Math.round(finalNetOpt) });
+
+          if (currentYear === 5 || currentYear === 10 || currentYear === 15 || currentYear === 20 || currentYear === years) {
+            historyHTML += `
+              <tr class="hover:bg-slate-900/50">
+                <td class="p-3 font-semibold text-emerald-400">An ${currentYear}</td>
+                <td class="p-3 font-mono">${Math.round(totalInvested).toLocaleString('fr-FR')} ${taxRule.curr}</td>
+                <td class="p-3 font-mono font-bold text-slate-100">${Math.round(finalNetOpt).toLocaleString('fr-FR')} ${taxRule.curr}</td>
+                <td class="p-3 font-mono text-cyan-300">+${Math.round(gain - optTax).toLocaleString('fr-FR')} ${taxRule.curr}</td>
+              </tr>
+            `;
+          }
+        }
+      }
+
+      const finalGain = Math.max(0, netValue - totalInvested);
+      const finalOptTax = taxRule.taxOpt(years, finalGain, totalInvested);
+      const finalStdTax = taxRule.taxStd(years, finalGain);
+      const finalOptNet = totalInvested + (finalGain - finalOptTax);
+      const finalStdNet = totalInvested + (finalGain - finalStdTax);
+      const taxSaved = finalOptNet - finalStdNet;
+      const fireMonthly = Math.round((finalOptNet * (withdrawalRate / 100)) / 12);
+
+      const perTaxSaving = Math.round(perAnnual * (tmi / 100));
+      const isProgressiveBetter = tmi <= 11;
+      const auditBox = document.getElementById('taxAuditBox');
+      auditBox.innerHTML = `
+        <div class="font-semibold text-cyan-300">💡 Audit Fiscal (${taxRule.name}) :</div>
+        <div>• <strong>Économie d'impôt sur le revenu via PER :</strong> <span class="text-emerald-400 font-mono font-bold">+${perTaxSaving.toLocaleString('fr-FR')} € / an</span>.</div>
+        <div>• <strong>Arbitrage CTO / Flat Tax :</strong> ${isProgressiveBetter ? 'Option pour le <strong class="text-amber-300">Barème Progressif</strong> recommandée.' : 'Maintien de la <strong class="text-emerald-400">Flat Tax 30%</strong> recommandé.'}</div>
+      `;
+
+      const alertContainer = document.getElementById('peaAlertContainer');
+      if (peaExceeded) alertContainer.classList.remove('hidden');
+      else alertContainer.classList.add('hidden');
+
+      document.getElementById('resInvested').innerText = Math.round(totalInvested).toLocaleString('fr-FR') + ' ' + taxRule.curr;
+      document.getElementById('resOptimized').innerText = Math.round(finalOptNet).toLocaleString('fr-FR') + ' ' + taxRule.curr;
+      document.getElementById('resStandard').innerText = Math.round(finalStdNet).toLocaleString('fr-FR') + ' ' + taxRule.curr;
+      document.getElementById('resFire').innerText = fireMonthly.toLocaleString('fr-FR') + ' ' + taxRule.curr + '/mo';
+      document.getElementById('badgeTax').innerText = `Gain Fiscal : +${Math.round(taxSaved).toLocaleString('fr-FR')} ${taxRule.curr}`;
+      document.getElementById('tableBody').innerHTML = historyHTML;
+
+      drawChart(plotData, taxRule.curr);
+      renderSavedScenarios();
+    }
+
+    window.saveScenario = function() {
+      const scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
+      const name = `Scénario #${scenarios.length + 1} (${document.getElementById('rangeYears').value} ans)`;
+      const finalVal = document.getElementById('resOptimized').innerText;
+      scenarios.push({ id: Date.now(), name, finalVal });
+      localStorage.setItem('terminal_scenarios', JSON.stringify(scenarios));
+      updateSimulation();
+    };
+
+    window.deleteScenario = function(id) {
+      let scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
+      scenarios = scenarios.filter(s => s.id !== id);
+      localStorage.setItem('terminal_scenarios', JSON.stringify(scenarios));
+      updateSimulation();
+    };
+
+    function renderSavedScenarios() {
+      const container = document.getElementById('savedList');
+      const scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
+      if (scenarios.length === 0) {
+        container.innerHTML = '<span class="text-slate-500 italic">Aucun scénario enregistré.</span>';
+        return;
+      }
+      container.innerHTML = scenarios.map(s => `
+        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 flex justify-between items-center">
+          <div>
+            <div class="font-bold text-slate-200 text-xs">${s.name}</div>
+            <div class="text-emerald-400 font-mono text-xs">Valeur : ${s.finalVal}</div>
+          </div>
+          <button onclick="deleteScenario(${s.id})" class="text-red-400 hover:text-red-300 text-xs px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕</button>
+        </div>
+      `).join('');
+    }
+
+    window.exportCSV = function() {
+      let csv = "Annee;Capital_Investi;Valeur_Optimisee\n5;50000;75000\n10;100000;180000\n";
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'simulation_bourse.csv';
+      link.click();
+    };
+
+    window.exportReport = function() {
+      const text = `RAPPORT D'INVESTISSEMENT ULTIME\n===============================\nCapital Final Optimisé : ${document.getElementById('resOptimized').innerText}\nRente FIRE Estimée : ${document.getElementById('resFire').innerText}\n`;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'rapport_investissement_fiscal.txt';
+      link.click();
+    };
+
+    window.addEventListener('resize', () => { detectDevice(); updateSimulation(); });
+
+    const curr = TAX_RULES.FR.curr;
+    syncInputs('numInitial', 'rangeInitial', 'valInitialDisplay', curr);
+    syncInputs('numRecurring', 'rangeRecurring', 'valRecurringDisplay', curr);
+
+    ['selectFreq', 'rangeYears', 'rangeInflation', 'rangeWithdrawal', 'countrySelect', 'langSelect', 'selectBroker', 'selectStress', 'selectTmi', 'numPer'].forEach(id => {
+      document.getElementById(id).addEventListener('change', updateSimulation);
+      document.getElementById(id).addEventListener('input', updateSimulation);
+    });
+
+    detectDevice();
+    renderEtfList();
+    updateSimulation();
   </script>
 </body>
 </html>
