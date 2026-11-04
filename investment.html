@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terminal d'Investissement International & ETF</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
+  <style>
+    .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-emerald-500 selection:text-slate-950 font-sans antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+    const { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend } = Recharts;
+
+    const TRANSLATIONS = {
+      FR: {
+        title: "Terminal d'Investissement & ETF",
+        subtitle: "Simulateur multi-fiscalité, répartition ETF & arbitrage international",
+        countryLabel: "Pays de résidence fiscale",
+        langLabel: "Langue",
+        paramsTitle: "1. Paramètres de Capital",
+        initialCap: "Apport Initial",
+        recurringCap: "Versement Régulier",
+        freqLabel: "Fréquence des versements",
+        durationLabel: "Durée du projet",
+        assumptionsTitle: "Rendement & Hypothèses",
+        estReturn: "Rendement annuel estimé",
+        brokerFee: "Frais de courtage par ordre",
+        inflation: "Inflation annuelle estimée",
+        projectionsTitle: "Projections Financières Comparatives",
+        capInvested: "Capital Investi",
+        netOptimized: "Valeur Nette Optimisée",
+        netStandard: "Valeur Nette Standard",
+        netInflation: "Ajusté Inflation",
+        portfolioTitle: "2. Composition du Portefeuille Multi-ETF",
+        portfolioSubtitle: "Ajustez la pondération de vos ETF pour calculer vos frais et performances réels",
+        totalAlloc: "Total Allocation",
+        avgTer: "Frais d'encours moyens",
+        avgHist: "Performance historique moyenne",
+        addEtf: "Ajouter un ETF à l'allocation :",
+        databaseTitle: "3. Base de Données ETF Majeurs & Sectoriels",
+        isin: "ISIN",
+        peaEligible: "Éligible PEA",
+        type: "Type",
+        ter: "Frais (TER)",
+        hist10y: "Hist. 10 ans",
+        action: "Action",
+        inject: "Injecter Rendement",
+        yes: "Oui",
+        no: "Non (CTO)",
+        monthly: "Mensuelle (12/an)",
+        quarterly: "Trimestrielle (4/an)",
+        biyearly: "Semestrielle (2/an)",
+        yearly: "Annuelle (1/an)"
+      },
+      EN: {
+        title: "Investment & ETF Terminal",
+        subtitle: "Multi-jurisdiction simulator, ETF allocation & international tax arbitrage",
+        countryLabel: "Tax Residency",
+        langLabel: "Language",
+        paramsTitle: "1. Capital Parameters",
+        initialCap: "Initial Deposit",
+        recurringCap: "Recurring Contribution",
+        freqLabel: "Contribution Frequency",
+        durationLabel: "Investment Duration",
+        assumptionsTitle: "Returns & Assumptions",
+        estReturn: "Estimated Annual Return",
+        brokerFee: "Brokerage Fee per Order",
+        inflation: "Estimated Annual Inflation",
+        projectionsTitle: "Comparative Financial Projections",
+        capInvested: "Capital Invested",
+        netOptimized: "Optimized Net Value",
+        netStandard: "Standard Net Value",
+        netInflation: "Inflation Adjusted",
+        portfolioTitle: "2. Multi-ETF Portfolio Allocation",
+        portfolioSubtitle: "Adjust ETF weightings to compute exact fees and historical performance",
+        totalAlloc: "Total Allocation",
+        avgTer: "Average Expense Ratio",
+        avgHist: "Average Historical Return",
+        addEtf: "Add ETF to allocation:",
+        databaseTitle: "3. Major & Sectoral ETF Database",
+        isin: "ISIN",
+        peaEligible: "PEA Eligible",
+        type: "Type",
+        ter: "Expense Ratio (TER)",
+        hist10y: "10Y Hist.",
+        action: "Action",
+        inject: "Inject Return",
+        yes: "Yes",
+        no: "No",
+        monthly: "Monthly (12/yr)",
+        quarterly: "Quarterly (4/yr)",
+        biyearly: "Bi-yearly (2/yr)",
+        yearly: "Yearly (1/yr)"
+      },
+      ES: {
+        title: "Terminal de Inversión y ETF",
+        subtitle: "Simulador multifiscal, asignación de ETF y arbitraje internacional",
+        countryLabel: "Residencia Fiscal",
+        langLabel: "Idioma",
+        paramsTitle: "1. Parámetros de Capital",
+        initialCap: "Depósito Inicial",
+        recurringCap: "Aportación Periódica",
+        freqLabel: "Frecuencia de Aportación",
+        durationLabel: "Duración de la Inversión",
+        assumptionsTitle: "Rendimiento e Hipótesis",
+        estReturn: "Rendimiento Anual Estimado",
+        brokerFee: "Comisión de Corretaje por Orden",
+        inflation: "Inflación Anual Estimada",
+        projectionsTitle: "Proyecciones Financieras Comparativas",
+        capInvested: "Capital Invertido",
+        netOptimized: "Valor Neto Optimizado",
+        netStandard: "Valor Neto Estándar",
+        netInflation: "Ajustado por Inflación",
+        portfolioTitle: "2. Composición de Cartera Multi-ETF",
+        portfolioSubtitle: "Ajuste las ponderaciones para calcular comisiones y rendimiento histórico",
+        totalAlloc: "Asignación Total",
+        avgTer: "Comisión Media (TER)",
+        avgHist: "Rendimiento Histórico Medio",
+        addEtf: "Añadir ETF a la cartera:",
+        databaseTitle: "3. Base de Datos de ETF Principales y Sectoriales",
+        isin: "ISIN",
+        peaEligible: "Elegible PEA",
+        type: "Tipo",
+        ter: "Gastos (TER)",
+        hist10y: "Hist. 10 años",
+        action: "Acción",
+        inject: "Inyectar Rendimiento",
+        yes: "Sí",
+        no: "No",
+        monthly: "Mensual (12/año)",
+        quarterly: "Trimestral (4/año)",
+        biyearly: "Semestral (2/año)",
+        yearly: "Anual (1/año)"
+      }
+    };
+
+    const COUNTRIES_TAX = {
+      FR: {
+        name: "France",
+        optName: "PEA (Exonération IR > 5 ans)",
+        stdName: "CTO (Flat Tax 30%)",
+        optTax: (year, gain) => gain * (year >= 5 ? 0.172 : 0.30),
+        stdTax: (year, gain) => gain * 0.30,
+        currency: "€"
+      },
+      US: {
+        name: "United States",
+        optName: "Roth IRA (Tax-Free Growth)",
+        stdName: "Taxable Account (Cap Gains Tax ~15%)",
+        optTax: (year, gain) => 0,
+        stdTax: (year, gain) => gain * 0.15,
+        currency: "$"
+      },
+      UK: {
+        name: "United Kingdom",
+        optName: "Stocks & Shares ISA (Tax-Free)",
+        stdName: "General Investment Account (20% CGT)",
+        optTax: (year, gain) => 0,
+        stdTax: (year, gain) => gain * 0.20,
+        currency: "£"
+      },
+      DE: {
+        name: "Germany",
+        optName: "Depot mit Teilfreistellung (Abgeltungsteuer ~26.375%)",
+        stdName: "Standard Investment Account",
+        optTax: (year, gain) => gain * 0.184,
+        stdTax: (year, gain) => gain * 0.26375,
+        currency: "€"
+      },
+      ES: {
+        name: "España",
+        optName: "Traspaso de Fondos / Regímenes Eficientes",
+        stdName: "Cuenta de Valores Standard (IRPF 19%-28%)",
+        optTax: (year, gain) => gain * 0.19,
+        stdTax: (year, gain) => gain * 0.23,
+        currency: "€"
+      }
+    };
+
+    const ETF_DATABASE = [
+      { id: 'cw8', name: 'Amundi PEA MSCI World UCITS ETF', isin: 'FR0013412020', ticker: 'CW8', pea: true, ter: 0.38, hist10y: 10.5, type: 'Synthétique' },
+      { id: 'wpea', name: 'iShares MSCI World Swap PEA UCITS ETF', isin: 'IE0002XZWYI4', ticker: 'WPEA', pea: true, ter: 0.20, hist10y: 10.5, type: 'Synthétique' },
+      { id: 'panx', name: 'Amundi PEA Nasdaq 100 UCITS ETF', isin: 'FR0011871110', ticker: 'PUUST', pea: true, ter: 0.30, hist10y: 17.2, type: 'Synthétique' },
+      { id: 'ese', name: 'Amundi S&P 500 UCITS ETF (PEA)', isin: 'FR0013012434', ticker: 'ESE', pea: true, ter: 0.15, hist10y: 12.8, type: 'Synthétique' },
+      { id: 'paeem', name: 'Amundi PEA MSCI Emerging ESG UCITS ETF', isin: 'LU2572257211', ticker: 'PAEEM', pea: true, ter: 0.30, hist10y: 4.8, type: 'Synthétique' },
+      { id: 'semi', name: 'Amundi MSCI Global Semiconductors UCITS ETF', isin: 'LU1900066915', ticker: 'SEMI', pea: false, ter: 0.35, hist10y: 22.4, type: 'Physique' },
+      { id: 'robo', name: 'Amundi Stoxx Global Automation & Robotics', isin: 'LU1838002480', ticker: 'ROBO', pea: false, ter: 0.40, hist10y: 11.2, type: 'Physique' },
+      { id: 'inrg', name: 'iShares Global Clean Energy UCITS ETF', isin: 'IE00B1XNHC34', ticker: 'INRG', pea: false, ter: 0.65, hist10y: 5.1, type: 'Physique' }
+    ];
+
+    function App() {
+      const [lang, setLang] = useState('FR');
+      const [country, setCountry] = useState('FR');
+      const [initialCapital, setInitialCapital] = useState(5000);
+      const [recurringAmount, setRecurringAmount] = useState(300);
+      const [frequency, setFrequency] = useState(12);
+      const [years, setYears] = useState(20);
+      const [annualReturn, setAnnualReturn] = useState(8.5);
+      const [inflation, setInflation] = useState(2.0);
+      const [brokerFeePercent, setBrokerFeePercent] = useState(0.2);
+      const [isMobile, setIsMobile] = useState(false);
+
+      const t = TRANSLATIONS[lang];
+      const taxConfig = COUNTRIES_TAX[country];
+
+      useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+      }, []);
+
+      const [portfolio, setPortfolio] = useState([
+        { etfId: 'wpea', weight: 60 },
+        { etfId: 'panx', weight: 20 },
+        { etfId: 'ese', weight: 20 }
+      ]);
+
+      const portfolioMetrics = useMemo(() => {
+        let totalWeight = portfolio.reduce((acc, curr) => acc + curr.weight, 0);
+        if (totalWeight === 0) return { avgTer: 0, avgHist: 0, valid: false };
+
+        let avgTer = 0;
+        let avgHist = 0;
+        portfolio.forEach(item => {
+          const etf = ETF_DATABASE.find(e => e.id === item.etfId);
+          if (etf) {
+            avgTer += (etf.ter * item.weight) / totalWeight;
+            avgHist += (etf.hist10y * item.weight) / totalWeight;
+          }
+        });
+        return {
+          avgTer: Number(avgTer.toFixed(2)),
+          avgHist: Number(avgHist.toFixed(2)),
+          totalWeight,
+          valid: totalWeight === 100
+        };
+      }, [portfolio]);
+
+      const simulationData = useMemo(() => {
+        const data = [];
+        const periodsPerYear = Number(frequency);
+        const totalPeriods = years * periodsPerYear;
+        
+        const netTerRatePerPeriod = Math.pow(1 + (annualReturn - portfolioMetrics.avgTer) / 100, 1 / periodsPerYear) - 1;
+        const inflationRatePerPeriod = Math.pow(1 + (annualReturn - portfolioMetrics.avgTer - inflation) / 100, 1 / periodsPerYear) - 1;
+        const brokerFeeDecimal = brokerFeePercent / 100;
+
+        let totalInvested = initialCapital;
+        let netPeaValue = initialCapital * (1 - brokerFeeDecimal);
+        let inflationAdjustedValue = initialCapital * (1 - brokerFeeDecimal);
+
+        data.push({
+          year: 0,
+          invested: Math.round(totalInvested),
+          peaNet: Math.round(netPeaValue),
+          ctoNet: Math.round(netPeaValue),
+          inflationNet: Math.round(inflationAdjustedValue)
+        });
+
+        for (let p = 1; p <= totalPeriods; p++) {
+          const periodicContribution = recurringAmount;
+          const netContribution = periodicContribution * (1 - brokerFeeDecimal);
+
+          totalInvested += periodicContribution;
+          netPeaValue = (netPeaValue + netContribution) * (1 + netTerRatePerPeriod);
+          inflationAdjustedValue = (inflationAdjustedValue + netContribution) * (1 + inflationRatePerPeriod);
+
+          if (p % periodsPerYear === 0) {
+            const currentYear = p / periodsPerYear;
+            const capitalGain = Math.max(0, netPeaValue - totalInvested);
+            
+            const optTaxAmount = taxConfig.optTax(currentYear, capitalGain);
+            const stdTaxAmount = taxConfig.stdTax(currentYear, capitalGain);
+
+            data.push({
+              year: currentYear,
+              invested: Math.round(totalInvested),
+              peaNet: Math.round(netPeaValue - optTaxAmount),
+              ctoNet: Math.round(netPeaValue - stdTaxAmount),
+              inflationNet: Math.round(inflationAdjustedValue)
+            });
+          }
+        }
+        return data;
+      }, [initialCapital, recurringAmount, frequency, years, annualReturn, inflation, portfolioMetrics.avgTer, brokerFeePercent, country]);
+
+      const lastDataPoint = simulationData[simulationData.length - 1];
+      const taxSaved = lastDataPoint ? lastDataPoint.peaNet - lastDataPoint.ctoNet : 0;
+
+      const handleWeightChange = (index, value) => {
+        const updated = [...portfolio];
+        updated[index].weight = Number(value);
+        setPortfolio(updated);
+      };
+
+      const handleAddEtf = (etfId) => {
+        if (!portfolio.find(p => p.etfId === etfId)) {
+          setPortfolio([...portfolio, { etfId, weight: 0 }]);
+        }
+      };
+
+      const handleRemoveEtf = (index) => {
+        setPortfolio(portfolio.filter((_, i) => i !== index));
+      };
+
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 space-y-8">
+          {/* Header Bar */}
+          <header className="glass-card p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xl">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                {t.title}
+              </h1>
+              <p className="text-slate-400 text-xs md:text-sm mt-1">{t.subtitle}</p>
+            </div>
+
+            {/* Selectors */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">{t.countryLabel}</label>
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                >
+                  {Object.keys(COUNTRIES_TAX).map((c) => (
+                    <option key={c} value={c}>{COUNTRIES_TAX[c].name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">{t.langLabel}</label>
+                <select
+                  value={lang}
+                  onChange={(e) => setLang(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                >
+                  <option value="FR">🇫🇷 Français</option>
+                  <option value="EN">🇬🇧 English</option>
+                  <option value="ES">🇪🇸 Español</option>
+                </select>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Input Controls */}
+            <div className="glass-card rounded-2xl p-6 space-y-6">
+              <h2 className="text-lg font-bold text-slate-100 border-b border-slate-800 pb-3">{t.paramsTitle}</h2>
+
+              {/* Initial Capital */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-400">{t.initialCap}</span>
+                  <span className="font-mono text-emerald-400 font-bold">{initialCapital.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="150000"
+                  step="100"
+                  value={initialCapital}
+                  onChange={(e) => setInitialCapital(Number(e.target.value))}
+                  className="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Recurring Contribution */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-400">{t.recurringCap}</span>
+                  <span className="font-mono text-emerald-400 font-bold">{recurringAmount.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="5000"
+                  step="100"
+                  value={recurringAmount}
+                  onChange={(e) => setRecurringAmount(Number(e.target.value))}
+                  className="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Frequency */}
+              <div>
+                <label className="text-xs text-slate-400 block mb-2">{t.freqLabel}</label>
+                <select
+                  value={frequency}
+                  onChange={(e) => setFrequency(Number(e.target.value))}
+                  className="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2.5 text-xs md:text-sm"
+                >
+                  <option value={12}>{t.monthly}</option>
+                  <option value={4}>{t.quarterly}</option>
+                  <option value={2}>{t.biyearly}</option>
+                  <option value={1}>{t.yearly}</option>
+                </select>
+              </div>
+
+              {/* Duration */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-400">{t.durationLabel}</span>
+                  <span className="font-mono text-emerald-400 font-bold">{years} ans</span>
+                </div>
+                <input
+                  type="range"
+                  min="1"
+                  max="40"
+                  step="1"
+                  value={years}
+                  onChange={(e) => setYears(Number(e.target.value))}
+                  className="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Advanced Assumptions */}
+              <div className="pt-4 border-t border-slate-800 space-y-4">
+                <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{t.assumptionsTitle}</h3>
+                <div>
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>{t.estReturn}</span>
+                    <span className="font-mono text-emerald-400">{annualReturn}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1"
+                    max="15"
+                    step="0.1"
+                    value={annualReturn}
+                    onChange={(e) => setAnnualReturn(Number(e.target.value))}
+                    className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>{t.brokerFee}</span>
+                    <span className="font-mono text-slate-200">{brokerFeePercent}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="0.5"
+                    step="0.05"
+                    value={brokerFeePercent}
+                    onChange={(e) => setBrokerFeePercent(Number(e.target.value))}
+                    className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-xs text-slate-400 mb-1">
+                    <span>{t.inflation}</span>
+                    <span className="font-mono text-amber-400">{inflation}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value={inflation}
+                    onChange={(e) => setInflation(Number(e.target.value))}
+                    className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Visualisation Chart */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="glass-card rounded-2xl p-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+                  <h2 className="text-lg font-bold text-slate-100">{t.projectionsTitle}</h2>
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">
+                    Gain Fiscal : +{taxSaved.toLocaleString('fr-FR')} {taxConfig.currency}
+                  </span>
+                </div>
+
+                {/* Key Metric Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                    <span className="text-xs text-slate-400 block">{t.capInvested}</span>
+                    <span className="text-base md:text-lg font-bold font-mono text-slate-100">{lastDataPoint?.invested.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                  </div>
+                  <div className="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800">
+                    <span className="text-xs text-emerald-400 block">{taxConfig.optName}</span>
+                    <span className="text-base md:text-lg font-bold font-mono text-emerald-300">{lastDataPoint?.peaNet.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                  </div>
+                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                    <span className="text-xs text-slate-400 block">{taxConfig.stdName}</span>
+                    <span className="text-base md:text-lg font-bold font-mono text-slate-300">{lastDataPoint?.ctoNet.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                  </div>
+                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                    <span className="text-xs text-slate-400 block">{t.netInflation}</span>
+                    <span className="text-base md:text-lg font-bold font-mono text-amber-300">{lastDataPoint?.inflationNet.toLocaleString('fr-FR')} {taxConfig.currency}</span>
+                  </div>
+                </div>
+
+                {/* Chart Area */}
+                <div className={isMobile ? "h-64 w-full" : "h-80 w-full"}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={simulationData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <XAxis dataKey="year" stroke="#64748b" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="#64748b" tickFormatter={(val) => `${(val / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: '#090d16', borderColor: '#334155', borderRadius: '12px', color: '#f8fafc' }}
+                        formatter={(val) => [`${val.toLocaleString('fr-FR')} ${taxConfig.currency}`, '']}
+                      />
+                      <Legend />
+                      <Area type="monotone" dataKey="peaNet" name={taxConfig.optName} stroke="#10b981" fill="#10b981" fillOpacity={0.15} strokeWidth={2.5} />
+                      <Area type="monotone" dataKey="ctoNet" name={taxConfig.stdName} stroke="#64748b" fill="#64748b" fillOpacity={0.05} strokeWidth={2} />
+                      <Area type="monotone" dataKey="invested" name={t.capInvested} stroke="#3b82f6" fill="none" strokeDasharray="4 4" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Multi-ETF Portfolio Builder */}
+              <div className="glass-card rounded-2xl p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-100">{t.portfolioTitle}</h2>
+                    <p className="text-xs text-slate-400">{t.portfolioSubtitle}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-xs md:text-sm font-bold ${portfolioMetrics.valid ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {t.totalAlloc}: {portfolioMetrics.totalWeight}%
+                    </span>
+                    <span className="text-xs text-slate-400 block">{t.avgTer}: {portfolioMetrics.avgTer}%</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {portfolio.map((item, index) => {
+                    const etf = ETF_DATABASE.find(e => e.id === item.etfId);
+                    return (
+                      <div key={index} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                        <div className="flex-1">
+                          <div className="font-semibold text-xs md:text-sm text-slate-200">{etf?.name}</div>
+                          <div className="text-xs text-slate-400 font-mono">ISIN: {etf?.isin} | TER: {etf?.ter}% | 10Y: {etf?.hist10y}%</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.weight}
+                            onChange={(e) => handleWeightChange(index, e.target.value)}
+                            className="w-16 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-center text-xs font-mono text-emerald-400"
+                          />
+                          <span className="text-xs text-slate-400">%</span>
+                          <button
+                            onClick={() => handleRemoveEtf(index)}
+                            className="text-red-400 hover:text-red-300 text-xs px-2 py-1 bg-red-950/40 rounded border border-red-900/60"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Add ETF */}
+                <div className="pt-2">
+                  <label className="text-xs text-slate-400 block mb-2">{t.addEtf}</label>
+                  <div className="flex flex-wrap gap-2">
+                    {ETF_DATABASE.map(etf => (
+                      <button
+                        key={etf.id}
+                        onClick={() => handleAddEtf(etf.id)}
+                        className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg border border-slate-700 font-mono transition-colors"
+                      >
+                        + {etf.ticker} ({etf.ter}%)
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Database Table */}
+          <div className="glass-card rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-slate-100 mb-4">{t.databaseTitle}</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs md:text-sm text-slate-300">
+                <thead className="bg-slate-900/90 text-slate-400 uppercase text-xs">
+                  <tr>
+                    <th className="p-3">ETF / Ticker</th>
+                    <th className="p-3">{t.isin}</th>
+                    <th className="p-3">{t.peaEligible}</th>
+                    <th className="p-3">{t.type}</th>
+                    <th className="p-3">{t.ter}</th>
+                    <th className="p-3">{t.hist10y}</th>
+                    <th className="p-3">{t.action}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {ETF_DATABASE.map((etf) => (
+                    <tr key={etf.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="p-3 font-semibold text-slate-200">
+                        {etf.name} <span className="text-xs text-slate-400 font-normal">({etf.ticker})</span>
+                      </td>
+                      <td className="p-3 font-mono text-xs text-slate-400">{etf.isin}</td>
+                      <td className="p-3">
+                        {etf.pea ? (
+                          <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs px-2 py-0.5 rounded-full">{t.yes}</span>
+                        ) : (
+                          <span className="bg-slate-900 text-slate-400 border border-slate-700 text-xs px-2 py-0.5 rounded-full">{t.no}</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-xs">{etf.type}</td>
+                      <td className="p-3 font-mono text-emerald-400">{etf.ter}%</td>
+                      <td className="p-3 font-mono">{etf.hist10y}% / an</td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => setAnnualReturn(etf.hist10y)}
+                          className="text-xs bg-emerald-950 hover:bg-emerald-900 text-emerald-300 px-2.5 py-1 rounded-lg border border-emerald-800 transition-colors"
+                        >
+                          {t.inject}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
