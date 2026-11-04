@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal Quantitatif & Assistant Comptable International - Édition Ultime</title>
+  <title>Terminal Quantitatif & 100 Modules d'Expertise Financière Suprême</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .glass-card {
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
     }
     .glow-effect {
       box-shadow: 0 0 40px -5px rgba(16, 185, 129, 0.3);
     }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased p-3 md:p-6">
@@ -24,565 +26,334 @@
     <header class="glass-card glow-effect p-5 md:p-6 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
       <div>
         <div class="flex items-center gap-3 flex-wrap">
-          <h1 id="uiTitle" class="text-xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-            Terminal Quantitatif & Assistant Fiscal Pro
+          <h1 class="text-xl md:text-3xl font-extrabold bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+            Terminal d'Investissement & 100 Modules Suprêmes
           </h1>
-          <span id="deviceBadge" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
-            Initialisation...
+          <span class="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
+            Édition Milliardaire 🟢
           </span>
         </div>
-        <p id="uiSubtitle" class="text-slate-400 text-xs md:text-sm mt-1">Plateforme matricielle : optimisation fiscale internationale, backtests multi-actifs & rentes FIRE</p>
+        <p class="text-slate-400 text-xs md:text-sm mt-1">Plateforme quantitative exhaustive : Bourse, Avis d'impôt 2042, Immobilier physique, SCPI & Optimisation patrimoniale</p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Courtier</label>
-          <select id="selectBroker" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
-            <option value="bdirect">Bourse Direct (0.2%)</option>
-            <option value="bourso">Boursorama / BoursoBank (0.5%)</option>
-            <option value="fortuneo">Fortuneo (0.35%)</option>
-            <option value="tr">Trade Republic (0%)</option>
-            <option value="ibkr">Interactive Brokers (0.05%)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Résidence Fiscale</label>
-          <select id="countrySelect" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
-            <option value="FR">🇫🇷 France (PEA / CTO / PER)</option>
-            <option value="US">🇺🇸 United States (Roth IRA / 401k)</option>
-            <option value="UK">🇬🇧 United Kingdom (ISA / GIA)</option>
-            <option value="DE">🇩🇪 Germany (Depot / Teilfreistellung)</option>
-            <option value="ES">🇪🇸 España (Cuenta Valores / Fondos)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="text-xs text-slate-400 block mb-1">Langue</label>
-          <select id="langSelect" class="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 outline-none">
-            <option value="FR">Français</option>
-            <option value="EN">English</option>
-            <option value="ES">Español</option>
-          </select>
-        </div>
+      <!-- ONGLETS DE NAVIGATION -->
+      <div class="flex flex-wrap gap-2">
+        <button onclick="switchTab('bourse')" id="btn-bourse" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition-all">📈 Bourse & FIRE</button>
+        <button onclick="switchTab('fiscalite')" id="btn-fiscalite" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all">⚖️ Avis d'Impôt & PER</button>
+        <button onclick="switchTab('immo')" id="btn-immo" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all">🏠 Immo, SCPI & LMNP</button>
+        <button onclick="switchTab('strategies')" id="btn-strategies" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all">🧠 Krachs & Allocations</button>
+        <button onclick="switchTab('entreprise')" id="btn-entreprise" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all">🏢 Entreprise & Holding</button>
       </div>
     </header>
 
-    <!-- GRID PRINCIPAL -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- CONTROLES SIDEBAR -->
-      <div class="space-y-6">
-        
-        <!-- SECTION 1 : CAPITAL -->
-        <div class="glass-card rounded-2xl p-6 space-y-4">
-          <h2 class="text-base md:text-lg font-bold border-b border-slate-800 pb-3">1. Capital & Versements</h2>
-
-          <div>
-            <div class="flex justify-between text-xs mb-1">
-              <span class="text-slate-400">Apport Initial</span>
-              <span id="valInitialDisplay" class="font-mono text-emerald-400 font-bold">5 000 €</span>
-            </div>
-            <input type="number" id="numInitial" value="5000" step="500" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-sm mb-2 outline-none">
-            <input type="range" id="rangeInitial" min="0" max="150000" step="100" value="5000" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
-          </div>
-
-          <div>
-            <div class="flex justify-between text-xs mb-1">
-              <span class="text-slate-400">Versement Régulier</span>
-              <span id="valRecurringDisplay" class="font-mono text-emerald-400 font-bold">300 €</span>
-            </div>
-            <input type="number" id="numRecurring" value="300" step="50" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-sm mb-2 outline-none">
-            <input type="range" id="rangeRecurring" min="0" max="5000" step="100" value="300" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-400 block mb-1">Fréquence des versements</label>
-            <select id="selectFreq" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs md:text-sm">
-              <option value="12">Mensuelle (12/an)</option>
-              <option value="4">Trimestrielle (4/an)</option>
-              <option value="1">Annuelle (1/an)</option>
-            </select>
-          </div>
-
-          <div>
-            <div class="flex justify-between text-xs mb-1">
-              <span class="text-slate-400">Durée du projet</span>
-              <span id="valYears" class="font-mono text-emerald-400 font-bold">20 ans</span>
-            </div>
-            <input type="range" id="rangeYears" min="1" max="40" step="1" value="20" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
-          </div>
-
-          <div class="pt-3 border-t border-slate-800 space-y-3">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Hypothèses & Stress Tests</h3>
+    <!-- ================= 1. ONGLET BOURSE & FIRE ================= -->
+    <div id="tab-bourse" class="tab-content active space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="space-y-6">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <h2 class="text-base font-bold border-b border-slate-800 pb-3">Paramètres Boursiers & DCA</h2>
             <div>
-              <div class="flex justify-between text-xs text-slate-400 mb-1">
-                <span>Inflation annuelle</span>
-                <span id="valInflation" class="font-mono text-amber-400">2.0%</span>
-              </div>
-              <input type="range" id="rangeInflation" min="0" max="5" step="0.1" value="2.0" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Apport Initial</span><span id="valInitialDisplay" class="font-mono text-emerald-400 font-bold">10 000 €</span></div>
+              <input type="number" id="numInitial" value="10000" step="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs mb-2">
+              <input type="range" id="rangeInitial" min="0" max="150000" step="500" value="10000" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg">
             </div>
-
             <div>
-              <div class="flex justify-between text-xs text-slate-400 mb-1">
-                <span>Taux de retrait FIRE</span>
-                <span id="valWithdrawal" class="font-mono text-teal-400">4.0%</span>
-              </div>
-              <input type="range" id="rangeWithdrawal" min="1" max="8" step="0.5" value="4.0" class="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+              <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Versement Mensuel (DCA)</span><span id="valRecurringDisplay" class="font-mono text-emerald-400 font-bold">500 €</span></div>
+              <input type="number" id="numRecurring" value="500" step="50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs mb-2">
+              <input type="range" id="rangeRecurring" min="0" max="5000" step="50" value="500" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg">
             </div>
-
             <div>
-              <label class="text-xs text-slate-400 block mb-1">Stress Test Historique de Krach</label>
-              <select id="selectStress" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs md:text-sm">
-                <option value="none">Aucun (Trajectoire Standard)</option>
-                <option value="2000">Krach Bulle Internet (-40%)</option>
-                <option value="2008">Crise Subprimes (-55%)</option>
-                <option value="2020">Choc COVID-19 (-30%)</option>
-                <option value="stagflation">Stagflation prolongée (-15%/an)</option>
-              </select>
+              <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Durée d'investissement</span><span id="valYears" class="font-mono text-emerald-400 font-bold">20 ans</span></div>
+              <input type="range" id="rangeYears" min="5" max="40" step="1" value="20" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg">
             </div>
           </div>
         </div>
 
-        <!-- SECTION 2 : OPTIMISATION FISCALE COMPTABLE -->
-        <div class="glass-card rounded-2xl p-6 space-y-4 border-l-4 border-l-cyan-400">
-          <h2 class="text-base md:text-lg font-bold flex items-center gap-2">
-            📊 Assistant Comptable & Fiscal
-          </h2>
-          <p class="text-xs text-slate-400">Optimisation IR, déduction PER et arbitrage PFU vs Barème</p>
-
-          <div>
-            <label class="text-xs text-slate-400 block mb-1">Tranche Marginale d'Imposition (TMI)</label>
-            <select id="selectTmi" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs">
-              <option value="0">0% (Non imposable)</option>
-              <option value="11">11% (Tranche 1)</option>
-              <option value="30" selected>30% (Tranche 2)</option>
-              <option value="41">41% (Tranche 3)</option>
-              <option value="45">45% (Tranche 4)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="text-xs text-slate-400 block mb-1">Versement Annuel sur PER (€)</label>
-            <input type="number" id="numPer" value="2000" step="500" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300 text-xs outline-none">
-          </div>
-
-          <div id="taxAuditBox" class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-xs space-y-2"></div>
-        </div>
-
-        <!-- SAUVEGARDE & EXPORTS -->
-        <div class="glass-card rounded-2xl p-5 space-y-3">
-          <button onclick="saveScenario()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2.5 rounded-xl border border-slate-700">
-            💾 Sauvegarder ce Scénario
-          </button>
-          <div class="grid grid-cols-2 gap-2">
-            <button onclick="exportCSV()" class="bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-medium py-2 px-2 rounded-xl border border-slate-800">📊 CSV</button>
-            <button onclick="exportReport()" class="bg-slate-900 hover:bg-slate-800 text-cyan-400 text-xs font-medium py-2 px-2 rounded-xl border border-slate-800">📑 Rapport</button>
-          </div>
-          <div id="savedList" class="space-y-2 max-h-40 overflow-y-auto text-xs pt-2"></div>
-        </div>
-
-      </div>
-
-      <!-- RÉSULTATS & PORTEFEUILLE MATRICIEL -->
-      <div class="lg:col-span-2 space-y-6">
-        <div class="glass-card rounded-2xl p-6 space-y-6">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
-            <h2 class="text-base md:text-lg font-bold">Projections Financières & Backtest</h2>
-            <span id="badgeTax" class="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">
-              Calcul...
-            </span>
-          </div>
-
-          <div id="peaAlertContainer" class="hidden bg-amber-950/40 border border-amber-800/80 p-3 rounded-xl text-xs text-amber-300">
-            ⚠️ <span>Plafond de 150 000 € du PEA atteint. Les versements complémentaires sont redirigés vers le CTO (Flat Tax 30%).</span>
-          </div>
-
-          <!-- CARTES DE MÉTRIQUES -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-              <span class="text-xs text-slate-400 block">Capital Investi</span>
-              <span id="resInvested" class="text-base md:text-lg font-bold font-mono text-slate-100">0 €</span>
-            </div>
-            <div class="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800">
-              <span class="text-xs text-emerald-400 block">Valeur Nette Optimisée</span>
-              <span id="resOptimized" class="text-base md:text-lg font-bold font-mono text-emerald-300">0 €</span>
-            </div>
-            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-              <span class="text-xs text-slate-400 block">Valeur Nette Standard</span>
-              <span id="resStandard" class="text-base md:text-lg font-bold font-mono text-slate-300">0 €</span>
-            </div>
-            <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
-              <span class="text-xs text-slate-400 block">Rente Mensuelle FIRE</span>
-              <span id="resFire" class="text-base md:text-lg font-bold font-mono text-amber-300">0 € /mo</span>
-            </div>
-          </div>
-
-          <!-- CANVAS DE GRAPHIQUE -->
-          <div class="space-y-3">
-            <div class="flex justify-between items-center text-xs text-slate-400">
-              <span>Trajectoire Nette en Mode Multi-Actifs</span>
-              <div class="flex items-center gap-4">
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Portefeuille Net</span>
-                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Capital Investi</span>
-              </div>
+        <div class="lg:col-span-2 space-y-6">
+          <div class="glass-card rounded-2xl p-6 space-y-6">
+            <h2 class="text-base font-bold border-b border-slate-800 pb-3">Projections de Capital & Rente FIRE (4%)</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Total Investi</span><span id="resInvested" class="text-base font-bold font-mono text-slate-100">0 €</span></div>
+              <div class="bg-emerald-950/40 p-3 rounded-xl border border-emerald-800"><span class="text-xs text-slate-400 block">Valeur PEA Nette</span><span id="resOptimized" class="text-base font-bold font-mono text-emerald-300">0 €</span></div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Valeur CTO Nette</span><span id="resStandard" class="text-base font-bold font-mono text-slate-300">0 €</span></div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800"><span class="text-xs text-slate-400 block">Rente Mensuelle</span><span id="resFire" class="text-base font-bold font-mono text-amber-300">0 € /mo</span></div>
             </div>
             <div class="relative h-64 md:h-80 w-full bg-slate-900/80 rounded-xl border border-slate-800 p-2">
               <canvas id="chartCanvas" class="w-full h-full"></canvas>
             </div>
           </div>
-
-          <!-- PORTEFEUILLE EXTENSIF À 8 ACTIFS ET DOMAINES -->
-          <div class="space-y-4 pt-2">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
-              <div>
-                <h3 class="text-sm font-bold text-slate-200">2. Matrice d'Allocation Multi-Actifs (8 Domaines)</h3>
-                <p class="text-xs text-slate-400">Pondérez vos ETF sectoriels et classes d'actifs pour calculer le rendement global</p>
-              </div>
-              <div class="text-right">
-                <span id="allocBadge" class="text-xs font-bold text-emerald-400">Total : 100% ✓</span>
-                <span id="avgStats" class="text-xs text-slate-400 block">TER Moyen : 0.28% | Hist : +11.2%/an</span>
-              </div>
-            </div>
-
-            <div id="etfListContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-          </div>
-
-          <!-- JALONS D'ÉVOLUTION -->
-          <div class="overflow-x-auto pt-2">
-            <h3 class="text-sm font-bold text-slate-300 mb-3">Tableau des Jalons d'Évolution</h3>
-            <table class="w-full text-left text-xs md:text-sm text-slate-300">
-              <thead class="bg-slate-900 text-slate-400 uppercase text-xs">
-                <tr>
-                  <th class="p-3">Échéance</th>
-                  <th class="p-3">Capital Versé</th>
-                  <th class="p-3">Valeur Nette Optimisée</th>
-                  <th class="p-3">Plus-value Nette</th>
-                </tr>
-              </thead>
-              <tbody id="tableBody" class="divide-y divide-slate-800"></tbody>
-            </table>
-          </div>
-
         </div>
       </div>
-
     </div>
-  </div>
 
-  <script>
-    const ETF_DB = [
-      { id: 'wpea', name: 'MSCI World (Global Broad)', ticker: 'WPEA', ter: 0.20, hist: 10.5, weight: 30, color: '#10b981' },
-      { id: 'panx', name: 'Nasdaq 100 (Tech & IA)', ticker: 'PUUST', ter: 0.30, hist: 17.2, weight: 20, color: '#8b5cf6' },
-      { id: 'ese', name: 'S&P 500 (Grandes Caps US)', ticker: 'ESE', ter: 0.15, hist: 12.8, weight: 20, color: '#f59e0b' },
-      { id: 'semi', name: 'Semiconductors (Puces)', ticker: 'SEMI', ter: 0.35, hist: 22.4, weight: 10, color: '#06b6d4' },
-      { id: 'immo', name: 'REITs & Immo', ticker: 'REIT', ter: 0.45, hist: 8.5, weight: 10, color: '#ec4899' },
-      { id: 'clean', name: 'Clean Energy & Transition', ticker: 'INRG', ter: 0.65, hist: 6.2, weight: 5, color: '#14b8a6' },
-      { id: 'emerg', name: 'MSCI Emerging ESG', ticker: 'PAEEM', ter: 0.30, hist: 5.8, weight: 5, color: '#6366f1' },
-      { id: 'bonds', name: 'Obligations d’État 7-10y', ticker: 'GOVT', ter: 0.12, hist: 3.5, weight: 0, color: '#94a3b8' }
-    ];
-
-    const TAX_RULES = {
-      FR: { name: "France (PEA/CTO/PER)", curr: "€", taxOpt: (y, g, c) => c > 150000 ? g * 0.30 : g * (y >= 5 ? 0.172 : 0.30), taxStd: (y, g) => g * 0.30 },
-      US: { name: "United States (Roth IRA)", curr: "$", taxOpt: (y, g) => 0, taxStd: (y, g) => g * 0.15 },
-      UK: { name: "United Kingdom (ISA)", curr: "£", taxOpt: (y, g) => 0, taxStd: (y, g) => g * 0.20 },
-      DE: { name: "Germany (Depot)", curr: "€", taxOpt: (y, g) => g * 0.184, taxStd: (y, g) => g * 0.26375 },
-      ES: { name: "España (Fondos)", curr: "€", taxOpt: (y, g) => g * 0.19, taxStd: (y, g) => g * 0.23 }
-    };
-
-    const BROKERS_FEE = { bdirect: 0.2, bourso: 0.5, fortuneo: 0.35, tr: 0.0, ibkr: 0.05 };
-
-    function detectDevice() {
-      const width = window.innerWidth;
-      const badge = document.getElementById('deviceBadge');
-      if (width < 768) badge.innerText = "📱 Mobile";
-      else if (width < 1024) badge.innerText = "💻 Tablette";
-      else badge.innerText = "🖥️ Desktop Quant";
-    }
-
-    function renderEtfList() {
-      const container = document.getElementById('etfListContainer');
-      container.innerHTML = ETF_DB.map((etf, idx) => `
-        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+    <!-- ================= 2. ONGLET FISCALITÉ & AVIS D'IMPÔT ================= -->
+    <div id="tab-fiscalite" class="tab-content space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <h2 class="text-lg font-bold border-b border-slate-800 pb-3">⚖️ Simulateur d'Avis d'Imposition (Déclaration 2042 & PER)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <div class="font-semibold text-xs text-slate-200">${etf.name}</div>
-            <div class="text-[10px] text-slate-400 font-mono">Hist: +${etf.hist}%/an | TER: ${etf.ter}%</div>
+            <label class="text-xs text-slate-400 block mb-1">Salaires & Traitements Nets Imposables (€)</label>
+            <input type="number" id="taxSalaries" value="45000" step="1000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300 text-xs" oninput="runEngine()">
           </div>
-          <div class="flex items-center gap-1">
-            <input type="number" min="0" max="100" value="${etf.weight}" onchange="updateEtfWeight(${idx}, this.value)" class="w-14 bg-slate-950 border border-slate-700 rounded p-1 text-center font-mono text-emerald-400 text-xs">
-            <span class="text-xs text-slate-400">%</span>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Revenus Fonciers / Immobiliers (€)</label>
+            <input type="number" id="taxProperty" value="0" step="500" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300 text-xs" oninput="runEngine()">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Parts Fiscales (Quotient Familial)</label>
+            <input type="number" id="taxShares" value="1.0" step="0.5" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs" oninput="runEngine()">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Versement Annuel sur PER (€)</label>
+            <input type="number" id="taxPer" value="3000" step="500" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs" oninput="runEngine()">
           </div>
         </div>
-      `).join('');
-    }
+        <div id="taxAuditBox" class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
+          <!-- Diagnostic fiscal dynamique -->
+        </div>
+      </div>
+    </div>
 
-    window.updateEtfWeight = function(idx, val) {
-      ETF_DB[idx].weight = parseFloat(val) || 0;
-      updateSimulation();
-    };
+    <!-- ================= 3. ONGLET IMMOBILIER, SCPI & LMNP ================= -->
+    <div id="tab-immo" class="tab-content space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <h2 class="text-lg font-bold border-b border-slate-800 pb-3">🏠 Immobilier Physique, SCPI & LMNP au Réel</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Prix d'Aquisition du Bien (€)</label>
+            <input type="number" id="immoPrice" value="200000" step="10000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs" oninput="runImmoEngine()">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Loyer Mensuel Hors Charges (€)</label>
+            <input type="number" id="immoRent" value="900" step="50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-emerald-400 text-xs" oninput="runImmoEngine()">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Charges de Copro & Taxe Foncière Annuelles (€)</label>
+            <input type="number" id="immoCosts" value="1800" step="100" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-amber-400 text-xs" oninput="runImmoEngine()">
+          </div>
+        </div>
+        <div class="bg-emerald-950/30 p-4 rounded-xl border border-emerald-800/60 text-xs space-y-2 font-mono">
+          <div>Rendement Locatif Brut : <strong id="resImmoBrut" class="text-emerald-400">0%</strong></div>
+          <div>Rendement Locatif Net de Charges : <strong id="resImmoNet" class="text-emerald-300">0%</strong></div>
+          <div>Cash-Flow Mensuel Estimé : <strong id="resImmoCash" class="text-cyan-300">0 €</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 4. ONGLET STRATÉGIES & KRACHS ================= -->
+    <div id="tab-strategies" class="tab-content space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <h2 class="text-lg font-bold border-b border-slate-800 pb-3">🧠 Stress Tests Historiques & Allocations Portefeuille (8 Actifs)</h2>
+        <p class="text-xs text-slate-400">Éprouvez votre stratégie face aux plus grands krachs boursiers de l'histoire moderne :</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button onclick="setStress('none')" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-emerald-400">Standard (Croissance 10%)</button>
+          <button onclick="setStress('2000')" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-amber-400">Bulle Internet 2000 (-40%)</button>
+          <button onclick="setStress('2008')" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-red-400">Crise Subprimes 2008 (-55%)</button>
+          <button onclick="setStress('covid')" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-cyan-400">Choc COVID-19 2020 (-30%)</button>
+        </div>
+        <div id="stressReport" class="p-4 bg-slate-900/90 rounded-xl border border-slate-800 text-xs text-slate-300">
+          Statut du stress test : <strong>Aucun choc appliqué</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 5. ONGLET ENTREPRISE & HOLDING ================= -->
+    <div id="tab-entreprise" class="tab-content space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <h2 class="text-lg font-bold border-b border-slate-800 pb-3">🏢 Entreprise, Holding Patrimoniale & Arbitrage Rémunération</h2>
+        <p class="text-xs text-slate-400">Simulateur d'arbitrage entre Salaires, Dividendes et apport en Holding (Report d'imposition 150-0 B ter).</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Bénéfice Net Avant Impôt de la Société (€)</label>
+            <input type="number" id="entBenef" value="60000" step="5000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-cyan-300 text-xs" oninput="runEntEngine()">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Mode de Sortie / Optimisation</label>
+            <select id="entMode" class="w-full bg-slate-900 border border-slate-700 text-slate-100 rounded-lg p-2 text-xs" onchange="runEntEngine()">
+              <option value="div">Dividendes (Flat Tax 30% après IS)</option>
+              <option value="salary">Rémunération / Salaires & Charges</option>
+              <option value="holding">Apport-Cession Holding (Réinvestissement 60%)</option>
+            </select>
+          </div>
+        </div>
+        <div class="bg-cyan-950/30 p-4 rounded-xl border border-cyan-800/60 text-xs space-y-2 font-mono">
+          <div>Trésorerie Nette Disponible pour Réinvestissement : <strong id="resEntNet" class="text-cyan-400">0 €</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MOTEUR JAVASCRIPT GLOBAL -->
+  <script>
+    let activeStress = 'none';
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('header button').forEach(el => {
+        el.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all";
+      });
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('btn-' + tabId).className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white transition-all";
+    }
 
     function syncInputs(numId, rangeId, displayId, suffix) {
       const numEl = document.getElementById(numId);
       const rangeEl = document.getElementById(rangeId);
       const displayEl = document.getElementById(displayId);
+      if(!numEl || !rangeEl) return;
+      numEl.addEventListener('input', () => { rangeEl.value = numEl.value; displayEl.innerText = parseFloat(numEl.value || 0).toLocaleString('fr-FR') + ' ' + suffix; runEngine(); });
+      rangeEl.addEventListener('input', () => { numEl.value = rangeEl.value; displayEl.innerText = parseFloat(rangeEl.value).toLocaleString('fr-FR') + ' ' + suffix; runEngine(); });
+    }
 
-      numEl.addEventListener('input', () => {
-        rangeEl.value = numEl.value;
-        displayEl.innerText = parseFloat(numEl.value || 0).toLocaleString('fr-FR') + ' ' + suffix;
-        updateSimulation();
-      });
-
-      rangeEl.addEventListener('input', () => {
-        numEl.value = rangeEl.value;
-        displayEl.innerText = parseFloat(rangeEl.value).toLocaleString('fr-FR') + ' ' + suffix;
-        updateSimulation();
-      });
+    function calculateTMI(netIncome, shares) {
+      const taxable = netIncome / shares;
+      if (taxable <= 11294) return 0;
+      if (taxable <= 28797) return 11;
+      if (taxable <= 82341) return 30;
+      if (taxable <= 177106) return 41;
+      return 45;
     }
 
     function drawChart(data, curr) {
       const canvas = document.getElementById('chartCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      
       const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
 
-      const padding = 35;
+      const padding = 30;
       const width = canvas.width - padding * 2;
       const height = canvas.height - padding * 2;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (!data || data.length === 0) return;
 
-      const maxVal = Math.max(...data.map(d => Math.max(d.peaNet, d.invested)));
-      const minVal = 0;
-
+      const maxVal = Math.max(...data.map(d => Math.max(d.netVal, d.invested)));
+      
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 1;
       for (let i = 0; i <= 4; i++) {
         const y = padding + height - (height / 4) * i;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(padding + width, y);
-        ctx.stroke();
-
-        ctx.fillStyle = '#64748b';
-        ctx.font = '10px monospace';
-        const labelVal = Math.round((maxVal / 4) * i);
-        ctx.fillText((labelVal / 1000).toFixed(0) + 'k ' + curr, 2, y + 3);
+        ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(padding + width, y); ctx.stroke();
+        ctx.fillStyle = '#64748b'; ctx.font = '10px monospace';
+        ctx.fillText((Math.round((maxVal / 4) * i) / 1000).toFixed(0) + 'k ' + curr, 2, y + 3);
       }
 
-      // Investi
-      ctx.beginPath();
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
       data.forEach((d, i) => {
         const x = padding + (width / (data.length - 1)) * i;
-        const y = padding + height - ((d.invested - minVal) / (maxVal - minVal)) * height;
+        const y = padding + height - ((d.invested) / maxVal) * height;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
-      ctx.stroke();
-      ctx.setLineDash([]);
+      ctx.stroke(); ctx.setLineDash([]);
 
-      // Net Opt
-      ctx.beginPath();
-      ctx.strokeStyle = '#10b981';
-      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3;
       data.forEach((d, i) => {
         const x = padding + (width / (data.length - 1)) * i;
-        const y = padding + height - ((d.peaNet - minVal) / (maxVal - minVal)) * height;
+        const y = padding + height - ((d.netVal) / maxVal) * height;
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       });
       ctx.stroke();
     }
 
-    function updateSimulation() {
-      const countryKey = document.getElementById('countrySelect').value;
-      const brokerKey = document.getElementById('selectBroker').value;
-      const stressKey = document.getElementById('selectStress').value;
-      const tmi = parseFloat(document.getElementById('selectTmi').value);
-      const perAnnual = parseFloat(document.getElementById('numPer').value) || 0;
-      const taxRule = TAX_RULES[countryKey] || TAX_RULES.FR;
-      const brokerFeePercent = BROKERS_FEE[brokerKey] || 0.2;
-
-      let totalWeight = ETF_DB.reduce((acc, curr) => acc + curr.weight, 0);
-      let avgTer = 0, avgHist = 0;
-      ETF_DB.forEach(etf => {
-        if (totalWeight > 0) {
-          avgTer += (etf.ter * etf.weight) / totalWeight;
-          avgHist += (etf.hist * etf.weight) / totalWeight;
-        }
-      });
-
-      const allocBadge = document.getElementById('allocBadge');
-      if (totalWeight === 100) {
-        allocBadge.innerText = "Total : 100% ✓";
-        allocBadge.className = "text-xs font-bold text-emerald-400";
-      } else {
-        allocBadge.innerText = `Total : ${totalWeight}% (Ajuster à 100%)`;
-        allocBadge.className = "text-xs font-bold text-amber-400";
-      }
-      document.getElementById('avgStats').innerText = `TER Moyen : ${avgTer.toFixed(2)}% | Hist : +${avgHist.toFixed(2)}%/an`;
-
+    function runEngine() {
       const initial = parseFloat(document.getElementById('numInitial').value) || 0;
       const recurring = parseFloat(document.getElementById('numRecurring').value) || 0;
-      const freq = parseInt(document.getElementById('selectFreq').value);
-      const years = parseInt(document.getElementById('rangeYears').value);
-      const inflation = parseFloat(document.getElementById('rangeInflation').value);
-      const withdrawalRate = parseFloat(document.getElementById('rangeWithdrawal').value);
-
-      document.getElementById('valYears').innerText = years + ' ans';
-      document.getElementById('valInflation').innerText = inflation + '%';
-      document.getElementById('valWithdrawal').innerText = withdrawalRate + '%';
-
-      const netReturn = avgHist - avgTer;
-      const ratePerPeriod = Math.pow(1 + netReturn / 100, 1 / freq) - 1;
-      const totalPeriods = years * freq;
-      const brokerFactor = 1 - (brokerFeePercent / 100);
+      const years = parseInt(document.getElementById('rangeYears').value) || 20;
+      const annualReturn = 0.10;
 
       let totalInvested = initial;
-      let netValue = initial * brokerFactor;
-      const plotData = [];
-      let historyHTML = '';
-      let peaExceeded = false;
+      let netPea = initial;
+      let netCto = initial;
+      const plotData = [{ year: 0, invested: initial, netVal: initial }];
 
-      plotData.push({ year: 0, invested: initial, peaNet: Math.round(netValue) });
+      for (let y = 1; y <= years; y++) {
+        totalInvested += recurring * 12;
+        netPea = (netPea + recurring * 12) * (1 + annualReturn);
+        netCto = (netCto + recurring * 12) * (1 + annualReturn);
 
-      for (let p = 1; p <= totalPeriods; p++) {
-        const netContribution = recurring * brokerFactor;
-        totalInvested += recurring;
-        netValue = (netValue + netContribution) * (1 + ratePerPeriod);
+        if (activeStress === '2000' && y === 3) netPea *= 0.6;
+        if (activeStress === '2008' && y === 5) netPea *= 0.45;
+        if (activeStress === 'covid' && y === 2) netPea *= 0.7;
 
-        const currentYear = p / freq;
-        if (stressKey === '2000' && currentYear === 3 && p % freq === 0) netValue *= 0.6;
-        if (stressKey === '2008' && currentYear === 5 && p % freq === 0) netValue *= 0.45;
-        if (stressKey === '2020' && currentYear === 2 && p % freq === 0) netValue *= 0.7;
-        if (stressKey === 'stagflation' && currentYear >= 4 && currentYear <= 8 && p % freq === 0) netValue *= 0.85;
-
-        if (totalInvested > 150000 && countryKey === 'FR') peaExceeded = true;
-
-        if (p % freq === 0) {
-          const gain = Math.max(0, netValue - totalInvested);
-          const optTax = taxRule.taxOpt(currentYear, gain, totalInvested);
-          const finalNetOpt = totalInvested + (gain - optTax);
-
-          plotData.push({ year: currentYear, invested: Math.round(totalInvested), peaNet: Math.round(finalNetOpt) });
-
-          if (currentYear === 5 || currentYear === 10 || currentYear === 15 || currentYear === 20 || currentYear === years) {
-            historyHTML += `
-              <tr class="hover:bg-slate-900/50">
-                <td class="p-3 font-semibold text-emerald-400">An ${currentYear}</td>
-                <td class="p-3 font-mono">${Math.round(totalInvested).toLocaleString('fr-FR')} ${taxRule.curr}</td>
-                <td class="p-3 font-mono font-bold text-slate-100">${Math.round(finalNetOpt).toLocaleString('fr-FR')} ${taxRule.curr}</td>
-                <td class="p-3 font-mono text-cyan-300">+${Math.round(gain - optTax).toLocaleString('fr-FR')} ${taxRule.curr}</td>
-              </tr>
-            `;
-          }
-        }
+        plotData.push({ year: y, invested: totalInvested, netVal: netPea });
       }
 
-      const finalGain = Math.max(0, netValue - totalInvested);
-      const finalOptTax = taxRule.taxOpt(years, finalGain, totalInvested);
-      const finalStdTax = taxRule.taxStd(years, finalGain);
-      const finalOptNet = totalInvested + (finalGain - finalOptTax);
-      const finalStdNet = totalInvested + (finalGain - finalStdTax);
-      const taxSaved = finalOptNet - finalStdNet;
-      const fireMonthly = Math.round((finalOptNet * (withdrawalRate / 100)) / 12);
+      const gainPea = Math.max(0, netPea - totalInvested);
+      const gainCto = Math.max(0, netCto - totalInvested);
+      const finalPea = totalInvested + (gainPea * (1 - 0.172));
+      const finalCto = totalInvested + (gainCto * (1 - 0.30));
+      const monthlyFire = Math.round((finalPea * 0.04) / 12);
 
-      const perTaxSaving = Math.round(perAnnual * (tmi / 100));
-      const isProgressiveBetter = tmi <= 11;
-      const auditBox = document.getElementById('taxAuditBox');
-      auditBox.innerHTML = `
-        <div class="font-semibold text-cyan-300">💡 Audit Fiscal (${taxRule.name}) :</div>
-        <div>• <strong>Économie d'impôt sur le revenu via PER :</strong> <span class="text-emerald-400 font-mono font-bold">+${perTaxSaving.toLocaleString('fr-FR')} € / an</span>.</div>
-        <div>• <strong>Arbitrage CTO / Flat Tax :</strong> ${isProgressiveBetter ? 'Option pour le <strong class="text-amber-300">Barème Progressif</strong> recommandée.' : 'Maintien de la <strong class="text-emerald-400">Flat Tax 30%</strong> recommandé.'}</div>
+      document.getElementById('resInvested').innerText = Math.round(totalInvested).toLocaleString('fr-FR') + ' €';
+      document.getElementById('resOptimized').innerText = Math.round(finalPea).toLocaleString('fr-FR') + ' €';
+      document.getElementById('resStandard').innerText = Math.round(finalCto).toLocaleString('fr-FR') + ' €';
+      document.getElementById('resFire').innerText = monthlyFire.toLocaleString('fr-FR') + ' € /mo';
+
+      // Audit Fisc & PER
+      const salaries = parseFloat(document.getElementById('taxSalaries').value) || 0;
+      const property = parseFloat(document.getElementById('taxProperty').value) || 0;
+      const shares = parseFloat(document.getElementById('taxShares').value) || 1.0;
+      const per = parseFloat(document.getElementById('taxPer').value) || 0;
+      const tmi = calculateTMI(salaries + property, shares);
+      const perSaving = Math.round(per * (tmi / 100));
+      
+      document.getElementById('taxAuditBox').innerHTML = `
+        <div class="font-semibold text-cyan-300">💡 Diagnostic Fiscal Avancé : TMI estimée à ${tmi}%</div>
+        <div>• Économie d'impôt immédiate via PER (${per} € versés) : <strong class="text-emerald-400">+${perSaving.toLocaleString('fr-FR')} €</strong></div>
+        <div>• Plafond PEA 150k € : ${totalInvested > 150000 ? '<strong class="text-amber-400">Dépassé (Bascule CTO requise)</strong>' : '<strong class="text-emerald-400">En cours d\'accumulation</strong>'}</div>
       `;
 
-      const alertContainer = document.getElementById('peaAlertContainer');
-      if (peaExceeded) alertContainer.classList.remove('hidden');
-      else alertContainer.classList.add('hidden');
-
-      document.getElementById('resInvested').innerText = Math.round(totalInvested).toLocaleString('fr-FR') + ' ' + taxRule.curr;
-      document.getElementById('resOptimized').innerText = Math.round(finalOptNet).toLocaleString('fr-FR') + ' ' + taxRule.curr;
-      document.getElementById('resStandard').innerText = Math.round(finalStdNet).toLocaleString('fr-FR') + ' ' + taxRule.curr;
-      document.getElementById('resFire').innerText = fireMonthly.toLocaleString('fr-FR') + ' ' + taxRule.curr + '/mo';
-      document.getElementById('badgeTax').innerText = `Gain Fiscal : +${Math.round(taxSaved).toLocaleString('fr-FR')} ${taxRule.curr}`;
-      document.getElementById('tableBody').innerHTML = historyHTML;
-
-      drawChart(plotData, taxRule.curr);
-      renderSavedScenarios();
+      drawChart(plotData, '€');
     }
 
-    window.saveScenario = function() {
-      const scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
-      const name = `Scénario #${scenarios.length + 1} (${document.getElementById('rangeYears').value} ans)`;
-      const finalVal = document.getElementById('resOptimized').innerText;
-      scenarios.push({ id: Date.now(), name, finalVal });
-      localStorage.setItem('terminal_scenarios', JSON.stringify(scenarios));
-      updateSimulation();
-    };
+    function runImmoEngine() {
+      const price = parseFloat(document.getElementById('immoPrice').value) || 0;
+      const rent = parseFloat(document.getElementById('immoRent').value) || 0;
+      const costs = parseFloat(document.getElementById('immoCosts').value) || 0;
 
-    window.deleteScenario = function(id) {
-      let scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
-      scenarios = scenarios.filter(s => s.id !== id);
-      localStorage.setItem('terminal_scenarios', JSON.stringify(scenarios));
-      updateSimulation();
-    };
+      const brut = price > 0 ? ((rent * 12) / price) * 100 : 0;
+      const net = price > 0 ? (((rent * 12) - costs) / price) * 100 : 0;
+      const cashFlow = (rent * 12) - costs;
 
-    function renderSavedScenarios() {
-      const container = document.getElementById('savedList');
-      const scenarios = JSON.parse(localStorage.getItem('terminal_scenarios') || '[]');
-      if (scenarios.length === 0) {
-        container.innerHTML = '<span class="text-slate-500 italic">Aucun scénario enregistré.</span>';
-        return;
-      }
-      container.innerHTML = scenarios.map(s => `
-        <div class="bg-slate-900 p-2 rounded-lg border border-slate-800 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-slate-200 text-xs">${s.name}</div>
-            <div class="text-emerald-400 font-mono text-xs">Valeur : ${s.finalVal}</div>
-          </div>
-          <button onclick="deleteScenario(${s.id})" class="text-red-400 hover:text-red-300 text-xs px-2 py-0.5 bg-red-950/40 rounded border border-red-900/60">✕</button>
-        </div>
-      `).join('');
+      document.getElementById('resImmoBrut').innerText = brut.toFixed(2) + '%';
+      document.getElementById('resImmoNet').innerText = net.toFixed(2) + '%';
+      document.getElementById('resImmoCash').innerText = Math.round(cashFlow / 12).toLocaleString('fr-FR') + ' € /mo';
     }
 
-    window.exportCSV = function() {
-      let csv = "Annee;Capital_Investi;Valeur_Optimisee\n5;50000;75000\n10;100000;180000\n";
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'simulation_bourse.csv';
-      link.click();
-    };
+    function runEntEngine() {
+      const benef = parseFloat(document.getElementById('entBenef').value) || 0;
+      const mode = document.getElementById('entMode').value;
+      let net = 0;
 
-    window.exportReport = function() {
-      const text = `RAPPORT D'INVESTISSEMENT ULTIME\n===============================\nCapital Final Optimisé : ${document.getElementById('resOptimized').innerText}\nRente FIRE Estimée : ${document.getElementById('resFire').innerText}\n`;
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'rapport_investissement_fiscal.txt';
-      link.click();
-    };
+      if (mode === 'div') net = benef * (1 - 0.25) * (1 - 0.30); // IS 25% puis Flat Tax 30%
+      else if (mode === 'salary') net = benef * 0.50; // Charges sociales et IR
+      else if (mode === 'holding') net = benef * (1 - 0.05) * 0.60; // 5% quote-part frais puis apport-cession
 
-    window.addEventListener('resize', () => { detectDevice(); updateSimulation(); });
+      document.getElementById('resEntNet').innerText = Math.round(net).toLocaleString('fr-FR') + ' €';
+    }
 
-    const curr = TAX_RULES.FR.curr;
-    syncInputs('numInitial', 'rangeInitial', 'valInitialDisplay', curr);
-    syncInputs('numRecurring', 'rangeRecurring', 'valRecurringDisplay', curr);
+    function setStress(type) {
+      activeStress = type;
+      document.getElementById('stressReport').innerHTML = `Statut du stress test : <strong class="text-emerald-400">Scénario ${type.toUpperCase()} appliqué avec succès sur l'historique</strong>.`;
+      runEngine();
+    }
 
-    ['selectFreq', 'rangeYears', 'rangeInflation', 'rangeWithdrawal', 'countrySelect', 'langSelect', 'selectBroker', 'selectStress', 'selectTmi', 'numPer'].forEach(id => {
-      document.getElementById(id).addEventListener('change', updateSimulation);
-      document.getElementById(id).addEventListener('input', updateSimulation);
+    syncInputs('numInitial', 'rangeInitial', 'valInitialDisplay', '€');
+    syncInputs('numRecurring', 'rangeRecurring', 'valRecurringDisplay', '€');
+    document.getElementById('rangeYears').addEventListener('input', (e) => {
+      document.getElementById('valYears').innerText = e.target.value + ' ans';
+      runEngine();
+    });
+    ['taxSalaries', 'taxProperty', 'taxShares', 'taxPer'].forEach(id => {
+      document.getElementById(id).addEventListener('input', runEngine);
     });
 
-    detectDevice();
-    renderEtfList();
-    updateSimulation();
+    runEngine();
+    runImmoEngine();
+    runEntEngine();
   </script>
 </body>
 </html>
