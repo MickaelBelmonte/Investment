@@ -3,37 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal d'Investissement International & ETF Pro</title>
+  <title>Terminal d'Investissement International & ETF Ultra Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
   <style>
-    .glass-card {
+    .dark .glass-card {
       background: rgba(15, 23, 42, 0.75);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
     .glow-effect {
       box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.15);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-emerald-500 selection:text-slate-950 font-sans antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans antialiased">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useMemo, useEffect } = React;
-    const { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend, PieChart, Pie, Cell } = Recharts;
+    const { useState, useMemo, useEffect, Component } = React;
+    
+    // Safely destructure Recharts with fallbacks
+    const RC = window.Recharts || {};
+    const ResponsiveContainer = RC.ResponsiveContainer || (({children}) => <div>{children}</div>);
+    const AreaChart = RC.AreaChart || (() => null);
+    const Area = RC.Area || (() => null);
+    const XAxis = RC.XAxis || (() => null);
+    const YAxis = RC.YAxis || (() => null);
+    const Tooltip = RC.Tooltip || (() => null);
+    const CartesianGrid = RC.CartesianGrid || (() => null);
+    const Legend = RC.Legend || (() => null);
+    const PieChart = RC.PieChart || (() => null);
+    const Pie = RC.Pie || (() => null);
+    const Cell = RC.Cell || (() => null);
+
+    // Error Boundary component to prevent blank/black screen on runtime errors
+    class ErrorBoundary extends Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      componentDidCatch(error, errorInfo) {
+        console.error("React Error Boundary caught an error:", error, errorInfo);
+      }
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div className="p-8 text-center text-red-400 bg-slate-900 min-h-screen flex flex-col items-center justify-center">
+              <h2 className="text-2xl font-bold mb-4">Une erreur est survenue lors de l'affichage.</h2>
+              <p className="text-sm font-mono bg-slate-950 p-4 rounded-lg border border-red-900 max-w-xl text-left">
+                {this.state.error?.toString()}
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-6 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500"
+              >
+                Recharger la page
+              </button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    const BROKERS_CONFIG = [
+      { id: 'custom', name: 'Personnalisé (Saisie manuelle)', feePercent: 0.2 },
+      { id: 'bourso', name: 'Boursorama / BoursoBank (0.5% max)', feePercent: 0.5 },
+      { id: 'fortuneo', name: 'Fortuneo (0.35% / 0.5%)', feePercent: 0.35 },
+      { id: 'bdirect', name: 'Bourse Direct (0.2%)', feePercent: 0.2 },
+      { id: 'tr', name: 'Trade Republic (Ordres fixes / DCA 0€)', feePercent: 0.0 },
+      { id: 'ibkr', name: 'Interactive Brokers (0.05%)', feePercent: 0.05 }
+    ];
 
     const TRANSLATIONS = {
       FR: {
-        title: "Terminal d'Investissement & ETF Pro",
-        subtitle: "Simulateur multi-fiscalité, répartition ETF, objectif de capital & export de rapports",
+        title: "Terminal d'Investissement & ETF Ultra Pro",
+        subtitle: "Simulateur multi-fiscalité, répartition ETF, rentes 4%, Lump Sum vs DCA & frais courtiers",
         countryLabel: "Pays de résidence fiscale",
         langLabel: "Langue",
+        brokerLabel: "Grille Tarifaire Courtier",
+        themeLabel: "Thème",
         paramsTitle: "1. Paramètres de Capital & Objectif",
         initialCap: "Apport Initial",
         recurringCap: "Versement Régulier",
@@ -42,18 +105,24 @@
         modeLabel: "Mode de simulation",
         modeNormal: "Standard (par durée)",
         modeTarget: "Objectif de Capital Cible",
+        modeLumpSum: "Comparateur Lump Sum vs DCA",
         targetCapital: "Capital Cible Souhaité",
         requiredMonthly: "Versement mensuel requis estimé",
         assumptionsTitle: "Rendement, Dividendes & Frais",
         estReturn: "Rendement annuel estimé",
         dripLabel: "Réinvestissement des dividendes (DRIP)",
-        brokerFee: "Frais de courtage par ordre",
+        brokerFee: "Frais de courtage appliqués",
         inflation: "Inflation annuelle estimée",
         projectionsTitle: "Projections Financières Comparatives",
         capInvested: "Capital Investi",
         netOptimized: "Valeur Nette Optimisée",
         netStandard: "Valeur Nette Standard",
         netInflation: "Ajusté Inflation",
+        fireTitle: "Phase de Restitution & Rente Passive (FIRE)",
+        fireSubtitle: "Calcul des retraits viagers selon la règle des 4%",
+        safeWithdrawalRate: "Taux de retrait annuel sûr",
+        monthlyIncome: "Rente mensuelle nette estimée",
+        yearlyIncome: "Rente annuelle nette estimée",
         portfolioTitle: "2. Composition du Portefeuille & Risque",
         portfolioSubtitle: "Répartition de vos ETF, frais d'encours et indice de volatilité estimé",
         totalAlloc: "Total Allocation",
@@ -82,10 +151,12 @@
         delete: "Supprimer"
       },
       EN: {
-        title: "Investment & ETF Pro Terminal",
-        subtitle: "Multi-jurisdiction simulator, ETF allocation, target capital & report export",
+        title: "Investment & ETF Ultra Pro Terminal",
+        subtitle: "Multi-jurisdiction simulator, ETF allocation, 4% FIRE annuity, Lump Sum vs DCA & broker fees",
         countryLabel: "Tax Residency",
         langLabel: "Language",
+        brokerLabel: "Broker Fee Structure",
+        themeLabel: "Theme",
         paramsTitle: "1. Capital & Target Parameters",
         initialCap: "Initial Deposit",
         recurringCap: "Recurring Contribution",
@@ -94,18 +165,24 @@
         modeLabel: "Simulation Mode",
         modeNormal: "Standard (by duration)",
         modeTarget: "Target Capital Goal",
+        modeLumpSum: "Lump Sum vs DCA Comparison",
         targetCapital: "Desired Target Capital",
         requiredMonthly: "Estimated required monthly contribution",
         assumptionsTitle: "Returns, Dividends & Fees",
         estReturn: "Estimated Annual Return",
         dripLabel: "Dividend Reinvestment (DRIP)",
-        brokerFee: "Brokerage Fee per Order",
+        brokerFee: "Brokerage Fee Applied",
         inflation: "Estimated Annual Inflation",
         projectionsTitle: "Comparative Financial Projections",
         capInvested: "Capital Invested",
         netOptimized: "Optimized Net Value",
         netStandard: "Standard Net Value",
         netInflation: "Inflation Adjusted",
+        fireTitle: "FIRE & Retirement Annuity Calculator",
+        fireSubtitle: "Safe withdrawal calculations using the 4% rule",
+        safeWithdrawalRate: "Safe Annual Withdrawal Rate",
+        monthlyIncome: "Estimated Net Monthly Income",
+        yearlyIncome: "Estimated Net Yearly Income",
         portfolioTitle: "2. Portfolio Allocation & Risk",
         portfolioSubtitle: "ETF breakdown, expense ratio and estimated volatility risk index",
         totalAlloc: "Total Allocation",
@@ -134,10 +211,12 @@
         delete: "Delete"
       },
       ES: {
-        title: "Terminal de Inversión y ETF Pro",
-        subtitle: "Simulador multifiscal, asignación de ETF, objetivo de capital y exportación",
+        title: "Terminal de Inversión y ETF Ultra Pro",
+        subtitle: "Simulador multifiscal, asignación de ETF, rentas 4%, Lump Sum vs DCA y comisiones",
         countryLabel: "Residencia Fiscal",
         langLabel: "Idioma",
+        brokerLabel: "Tarifa de Broker",
+        themeLabel: "Tema",
         paramsTitle: "1. Parámetros de Capital y Objetivo",
         initialCap: "Depósito Inicial",
         recurringCap: "Aportación Periódica",
@@ -146,18 +225,24 @@
         modeLabel: "Modo de Simulación",
         modeNormal: "Estándar (por duración)",
         modeTarget: "Objetivo de Capital",
+        modeLumpSum: "Comparador Lump Sum vs DCA",
         targetCapital: "Capital Objetivo Deseado",
         requiredMonthly: "Aportación mensual estimada requerida",
         assumptionsTitle: "Rendimiento, Dividendos y Gastos",
         estReturn: "Rendimiento Anual Estimado",
         dripLabel: "Reinversión de Dividendos (DRIP)",
-        brokerFee: "Comisión de Corretaje por Orden",
+        brokerFee: "Comisión de Corretaje Aplicada",
         inflation: "Inflación Anual Estimada",
         projectionsTitle: "Proyecciones Financieras Comparativas",
         capInvested: "Capital Invertido",
         netOptimized: "Valor Neto Optimizado",
         netStandard: "Valor Neto Estándar",
         netInflation: "Ajustado por Inflación",
+        fireTitle: "Calculadora de Rentas Pasivas (FIRE)",
+        fireSubtitle: "Cálculo de retiros seguros mediante la regla del 4%",
+        safeWithdrawalRate: "Tasa de Retiro Anual Seguro",
+        monthlyIncome: "Renta Mensual Neta Estimada",
+        yearlyIncome: "Renta Anual Neta Estimada",
         portfolioTitle: "2. Composición de Cartera y Riesgo",
         portfolioSubtitle: "Desglose de ETF, gastos y nivel de riesgo de volatilidad estimado",
         totalAlloc: "Asignación Total",
@@ -244,6 +329,8 @@
     function App() {
       const [lang, setLang] = useState('FR');
       const [country, setCountry] = useState('FR');
+      const [brokerId, setBrokerId] = useState('bdirect');
+      const [theme, setTheme] = useState('dark');
       const [initialCapital, setInitialCapital] = useState(5000);
       const [recurringAmount, setRecurringAmount] = useState(300);
       const [frequency, setFrequency] = useState(12);
@@ -252,13 +339,29 @@
       const [inflation, setInflation] = useState(2.0);
       const [brokerFeePercent, setBrokerFeePercent] = useState(0.2);
       const [drip, setDrip] = useState(true);
-      const [simMode, setSimMode] = useState('normal');
+      const [simMode, setSimMode] = useState('normal'); // 'normal', 'target', 'lump'
       const [targetCapitalGoal, setTargetCapitalGoal] = useState(200000);
+      const [withdrawalRate, setWithdrawalRate] = useState(4.0);
       const [isMobile, setIsMobile] = useState(false);
       const [savedScenarios, setSavedScenarios] = useState([]);
 
       const t = TRANSLATIONS[lang];
       const taxConfig = COUNTRIES_TAX[country];
+
+      // Handle Theme
+      useEffect(() => {
+        document.body.className = theme === 'dark' 
+          ? 'bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 font-sans antialiased dark' 
+          : 'bg-slate-50 text-slate-900 min-h-screen transition-colors duration-300 font-sans antialiased light';
+      }, [theme]);
+
+      // Sync Broker Fees
+      useEffect(() => {
+        const broker = BROKERS_CONFIG.find(b => b.id === brokerId);
+        if (broker && brokerId !== 'custom') {
+          setBrokerFeePercent(broker.feePercent);
+        }
+      }, [brokerId]);
 
       useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -327,7 +430,7 @@
         return Math.round(pmt);
       }, [simMode, targetCapitalGoal, initialCapital, years, frequency, annualReturn, portfolioMetrics.avgTer]);
 
-      const activeRecurring = simMode === 'target' ? calculatedRequiredMonthly : recurringAmount;
+      const activeRecurring = simMode === 'target' ? calculatedRequiredMonthly : (simMode === 'lump' ? 0 : recurringAmount);
 
       const simulationData = useMemo(() => {
         const data = [];
@@ -335,19 +438,24 @@
         const totalPeriods = years * periodsPerYear;
         
         const effectiveReturn = drip ? annualReturn : (annualReturn - 1.5);
-        const netTerRatePerPeriod = Math.pow(1 + (effectiveReturn - portfolioMetrics.avgTer) / 100, 1 / periodsPerYear) - 1;
-        const inflationRatePerPeriod = Math.pow(1 + (effectiveReturn - portfolioMetrics.avgTer - inflation) / 100, 1 / periodsPerYear) - 1;
+        const netTerRatePerPeriod = Math.pow(1 + Math.max(-90, effectiveReturn - portfolioMetrics.avgTer) / 100, 1 / periodsPerYear) - 1;
+        const inflationRatePerPeriod = Math.pow(1 + Math.max(-90, effectiveReturn - portfolioMetrics.avgTer - inflation) / 100, 1 / periodsPerYear) - 1;
         const brokerFeeDecimal = brokerFeePercent / 100;
 
         let totalInvested = initialCapital;
         let netPeaValue = initialCapital * (1 - brokerFeeDecimal);
         let inflationAdjustedValue = initialCapital * (1 - brokerFeeDecimal);
 
+        // Lump sum scenario alternative for comparison mode
+        let lumpSumInvested = initialCapital + (recurringAmount * years * periodsPerYear);
+        let lumpSumNetValue = lumpSumInvested * (1 - brokerFeeDecimal);
+
         data.push({
           year: 0,
           invested: Math.round(totalInvested),
           peaNet: Math.round(netPeaValue),
           ctoNet: Math.round(netPeaValue),
+          lumpNet: Math.round(lumpSumNetValue),
           inflationNet: Math.round(inflationAdjustedValue)
         });
 
@@ -357,29 +465,41 @@
 
           totalInvested += periodicContribution;
           netPeaValue = (netPeaValue + netContribution) * (1 + netTerRatePerPeriod);
+          lumpSumNetValue = lumpSumNetValue * (1 + netTerRatePerPeriod);
           inflationAdjustedValue = (inflationAdjustedValue + netContribution) * (1 + inflationRatePerPeriod);
 
           if (p % periodsPerYear === 0) {
             const currentYear = p / periodsPerYear;
             const capitalGain = Math.max(0, netPeaValue - totalInvested);
+            const lumpGain = Math.max(0, lumpSumNetValue - lumpSumInvested);
             
             const optTaxAmount = taxConfig.optTax(currentYear, capitalGain);
             const stdTaxAmount = taxConfig.stdTax(currentYear, capitalGain);
+            const lumpTaxAmount = taxConfig.optTax(currentYear, lumpGain);
 
             data.push({
               year: currentYear,
               invested: Math.round(totalInvested),
               peaNet: Math.round(netPeaValue - optTaxAmount),
               ctoNet: Math.round(netPeaValue - stdTaxAmount),
+              lumpNet: Math.round(lumpSumNetValue - lumpTaxAmount),
               inflationNet: Math.round(inflationAdjustedValue)
             });
           }
         }
         return data;
-      }, [initialCapital, activeRecurring, frequency, years, annualReturn, inflation, portfolioMetrics.avgTer, brokerFeePercent, country, drip]);
+      }, [initialCapital, activeRecurring, recurringAmount, frequency, years, annualReturn, inflation, portfolioMetrics.avgTer, brokerFeePercent, country, drip]);
 
       const lastDataPoint = simulationData[simulationData.length - 1];
       const taxSaved = lastDataPoint ? lastDataPoint.peaNet - lastDataPoint.ctoNet : 0;
+
+      // FIRE Annuity Calculations
+      const fireIncomeYearly = useMemo(() => {
+        if (!lastDataPoint) return 0;
+        return Math.round(lastDataPoint.peaNet * (withdrawalRate / 100));
+      }, [lastDataPoint, withdrawalRate]);
+
+      const fireIncomeMonthly = Math.round(fireIncomeYearly / 12);
 
       const pieChartData = useMemo(() => {
         return portfolio.map(item => {
@@ -435,7 +555,8 @@
           `- Capital Investi Total : ${lastDataPoint?.invested} ${taxConfig.currency}\n` +
           `- Valeur Nette Optimisée (${taxConfig.optName}) : ${lastDataPoint?.peaNet} ${taxConfig.currency}\n` +
           `- Valeur Nette Standard (${taxConfig.stdName}) : ${lastDataPoint?.ctoNet} ${taxConfig.currency}\n` +
-          `- Économie Fiscale Réalisée : +${taxSaved} ${taxConfig.currency}\n`;
+          `- Économie Fiscale Réalisée : +${taxSaved} ${taxConfig.currency}\n` +
+          `- Rente Passive Estimée (Regle des ${withdrawalRate}%) : ${fireIncomeMonthly} ${taxConfig.currency}/mois\n`;
 
         const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -476,6 +597,19 @@
 
             <div className="flex flex-wrap items-center gap-3">
               <div>
+                <label className="text-xs text-slate-400 block mb-1">{t.brokerLabel}</label>
+                <select
+                  value={brokerId}
+                  onChange={(e) => setBrokerId(e.target.value)}
+                  className="bg-slate-900 dark:bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                >
+                  {BROKERS_CONFIG.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="text-xs text-slate-400 block mb-1">{t.countryLabel}</label>
                 <select
                   value={country}
@@ -495,10 +629,20 @@
                   onChange={(e) => setLang(e.target.value)}
                   className="bg-slate-900 border border-slate-700 text-slate-100 rounded-lg text-xs md:text-sm px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
                 >
-                  <option value="FR">🇫🇷 Français</option>
-                  <option value="EN">🇬🇧 English</option>
-                  <option value="ES">🇪🇸 Español</option>
+                  <option value="FR">🇫🇷 FR</option>
+                  <option value="EN">🇬🇧 EN</option>
+                  <option value="ES">🇪🇸 ES</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">{t.themeLabel}</label>
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3 py-2 rounded-lg text-xs font-semibold"
+                >
+                  {theme === 'dark' ? '☀️ Clair' : '🌙 Sombre'}
+                </button>
               </div>
             </div>
           </header>
@@ -507,22 +651,28 @@
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Sidebar Controls */}
             <div className="glass-card rounded-2xl p-6 space-y-6">
-              <h2 className="text-lg font-bold text-slate-100 border-b border-slate-800 pb-3">{t.paramsTitle}</h2>
+              <h2 className="text-lg font-bold border-b border-slate-800 pb-3">{t.paramsTitle}</h2>
 
               <div>
                 <label className="text-xs text-slate-400 block mb-2">{t.modeLabel}</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-1">
                   <button
                     onClick={() => setSimMode('normal')}
-                    className={`text-xs py-2 px-3 rounded-lg border font-medium transition-all ${simMode === 'normal' ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                    className={`text-[10px] md:text-xs py-2 px-1 rounded-lg border font-medium transition-all ${simMode === 'normal' ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
                   >
-                    {t.modeNormal}
+                    DCA Standard
                   </button>
                   <button
                     onClick={() => setSimMode('target')}
-                    className={`text-xs py-2 px-3 rounded-lg border font-medium transition-all ${simMode === 'target' ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                    className={`text-[10px] md:text-xs py-2 px-1 rounded-lg border font-medium transition-all ${simMode === 'target' ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
                   >
-                    {t.modeTarget}
+                    Objectif Cible
+                  </button>
+                  <button
+                    onClick={() => setSimMode('lump')}
+                    className={`text-[10px] md:text-xs py-2 px-1 rounded-lg border font-medium transition-all ${simMode === 'lump' ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-400'}`}
+                  >
+                    Lump Sum
                   </button>
                 </div>
               </div>
@@ -563,7 +713,7 @@
 
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-400">{t.recurringCap} {simMode === 'target' && '(Calculé)'}</span>
+                  <span className="text-slate-400">{t.recurringCap} {simMode !== 'normal' && '(Ajusté)'}</span>
                   <span className="font-mono text-emerald-400 font-bold">{activeRecurring.toLocaleString('fr-FR')} {taxConfig.currency}</span>
                 </div>
                 <input
@@ -572,9 +722,9 @@
                   max="5000"
                   step="100"
                   value={activeRecurring}
-                  disabled={simMode === 'target'}
+                  disabled={simMode !== 'normal'}
                   onChange={(e) => setRecurringAmount(Number(e.target.value))}
-                  className={`w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg ${simMode === 'target' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg ${simMode !== 'normal' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 />
               </div>
 
@@ -609,7 +759,7 @@
               </div>
 
               <div className="pt-4 border-t border-slate-800 space-y-4">
-                <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">{t.assumptionsTitle}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider">{t.assumptionsTitle}</h3>
                 <div>
                   <div className="flex justify-between text-xs text-slate-400 mb-1">
                     <span>{t.estReturn}</span>
@@ -638,7 +788,7 @@
 
                 <div>
                   <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>{t.brokerFee}</span>
+                    <span>{t.brokerFee} ({brokerId})</span>
                     <span className="font-mono text-slate-200">{brokerFeePercent}%</span>
                   </div>
                   <input
@@ -647,8 +797,9 @@
                     max="0.5"
                     step="0.05"
                     value={brokerFeePercent}
+                    disabled={brokerId !== 'custom'}
                     onChange={(e) => setBrokerFeePercent(Number(e.target.value))}
-                    className="w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                    className={`w-full accent-emerald-500 bg-slate-800 h-1.5 rounded-lg ${brokerId !== 'custom' ? 'opacity-50' : 'cursor-pointer'}`}
                   />
                 </div>
 
@@ -697,7 +848,7 @@
             <div className="lg:col-span-2 space-y-6">
               <div className="glass-card rounded-2xl p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
-                  <h2 className="text-lg font-bold text-slate-100">{t.projectionsTitle}</h2>
+                  <h2 className="text-lg font-bold">{t.projectionsTitle}</h2>
                   <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-300">
                     Gain Fiscal : +{taxSaved.toLocaleString('fr-FR')} {taxConfig.currency}
                   </span>
@@ -735,9 +886,46 @@
                       <Legend />
                       <Area type="monotone" dataKey="peaNet" name={taxConfig.optName} stroke="#10b981" fill="#10b981" fillOpacity={0.15} strokeWidth={2.5} />
                       <Area type="monotone" dataKey="ctoNet" name={taxConfig.stdName} stroke="#64748b" fill="#64748b" fillOpacity={0.05} strokeWidth={2} />
+                      {simMode === 'lump' && (
+                        <Area type="monotone" dataKey="lumpNet" name="Lump Sum Total 100%" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.1} strokeWidth={2} />
+                      )}
                       <Area type="monotone" dataKey="invested" name={t.capInvested} stroke="#3b82f6" fill="none" strokeDasharray="4 4" strokeWidth={2} />
                     </AreaChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* FIRE Annuity Module */}
+              <div className="glass-card rounded-2xl p-6 space-y-4 border-l-4 border-l-emerald-500">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div>
+                    <h2 className="text-lg font-bold">{t.fireTitle}</h2>
+                    <p className="text-xs text-slate-400">{t.fireSubtitle}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">{t.safeWithdrawalRate} :</span>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      max="10"
+                      value={withdrawalRate}
+                      onChange={(e) => setWithdrawalRate(Number(e.target.value))}
+                      className="w-16 bg-slate-900 border border-slate-700 rounded-lg p-1 text-center font-mono text-emerald-400 text-xs"
+                    />
+                    <span className="text-xs text-slate-400">%</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="bg-emerald-950/30 border border-emerald-800/60 p-4 rounded-xl">
+                    <span className="text-xs text-emerald-400 block mb-1">{t.monthlyIncome}</span>
+                    <span className="text-2xl font-bold font-mono text-emerald-300">{fireIncomeMonthly.toLocaleString('fr-FR')} {taxConfig.currency} / mois</span>
+                  </div>
+                  <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-xs text-slate-400 block mb-1">{t.yearlyIncome}</span>
+                    <span className="text-2xl font-bold font-mono text-slate-200">{fireIncomeYearly.toLocaleString('fr-FR')} {taxConfig.currency} / an</span>
+                  </div>
                 </div>
               </div>
 
@@ -745,7 +933,7 @@
               <div className="glass-card rounded-2xl p-6 space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-100">{t.portfolioTitle}</h2>
+                    <h2 className="text-lg font-bold">{t.portfolioTitle}</h2>
                     <p className="text-xs text-slate-400">{t.portfolioSubtitle}</p>
                   </div>
                   <div className="text-right">
@@ -829,7 +1017,7 @@
 
               {savedScenarios.length > 0 && (
                 <div className="glass-card rounded-2xl p-6 space-y-4">
-                  <h2 className="text-lg font-bold text-slate-100">{t.savedScenarios}</h2>
+                  <h2 className="text-lg font-bold">{t.savedScenarios}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {savedScenarios.map(sc => (
                       <div key={sc.id} className="bg-slate-900/90 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
@@ -853,7 +1041,7 @@
 
           {/* Database Table */}
           <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-slate-100 mb-4">{t.databaseTitle}</h2>
+            <h2 className="text-lg font-bold mb-4">{t.databaseTitle}</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs md:text-sm text-slate-300">
                 <thead className="bg-slate-900/90 text-slate-400 uppercase text-xs">
@@ -904,7 +1092,12 @@
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    // Render App wrapped inside Error Boundary
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    );
   </script>
 </body>
 </html>
